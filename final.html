@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abandoned but not Forgotten — NASA's Silent Explorers</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #05050A;
+      --bg-navy: #0B132B;
+      --bg-card: #11141f;
+      --text-main: #f4f4f5;
+      --text-muted: #a3a8b8;
+      --accent: #e8cfa6;
+      --accent-glow: rgba(232, 207, 166, 0.25);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --px: 0px;
+      --py: 0px;
+      --hero-x: 0px;
+      --hero-y: 0px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      position: relative;
+      background-image: radial-gradient(circle at 50% 0%, var(--bg-navy) 0%, var(--bg-dark) 70%);
+      background-attachment: fixed;
+    }
+
+    #cinematic-particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #main-content { position: relative; z-index: 1; }
+
+    /* ============ VR CURSOR SPOTLIGHT ============ */
+    .vr-cursor-glow {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(127, 180, 255, 0.06) 0%, rgba(232, 207, 166, 0.02) 35%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+      transform: translate(-50%, -50%) translateZ(0);
+      will-change: transform, left, top;
+      left: 0; top: 0;
+    }
+
+    /* ============ UFO LAYER ============ */
+    #ufo-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .ufo-outer {
+      position: absolute; top: var(--ufo-top, 20%); left: 0;
+      will-change: transform;
+      transform: translate3d(calc(var(--px) * var(--depth, 1)), calc(var(--py) * var(--depth, 1)), 0);
+    }
+    .ufo-inner { animation: ufoTravel var(--dur, 30s) linear infinite; animation-delay: var(--delay, 0s); width: var(--size, 50px); }
+    .ufo-svg {
+      display: block; width: 100%; height: auto;
+      animation: ufoBob 3.5s ease-in-out infinite;
+      will-change: transform;
+    }
+    .ufo-svg .light { animation: lightBlink 1.2s ease-in-out infinite; }
+    .ufo-svg .light.l1 { animation-delay: 0s;   fill: #ffdd99; }
+    .ufo-svg .light.l2 { animation-delay: 0.15s; fill: #ffc266; }
+    .ufo-svg .light.l3 { animation-delay: 0.3s;  fill: #ffdd99; }
+    .ufo-svg .light.l4 { animation-delay: 0.45s; fill: #ffc266; }
+    .ufo-svg .light.l5 { animation-delay: 0.6s;  fill: #ffdd99; }
+    @keyframes lightBlink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+    @keyframes ufoTravel { 0% { transform: translateX(-100px); } 100% { transform: translateX(calc(100vw + 100px)); } }
+    @keyframes ufoBob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(-2deg); } }
+
+    /* ============ CUSTOM CURSOR ============ */
+    .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; border-radius: 50%; transform: translate(-50%, -50%); will-change: transform; }
+    .cursor-dot { width: 8px; height: 8px; background: var(--accent); }
+    .cursor-ring { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.4); transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s; }
+    .cursor-ring.hovering { width: 70px; height: 70px; background-color: rgba(232, 207, 166, 0.1); border-color: var(--accent); }
+    .cursor-ring.dragging { width: 30px; height: 30px; background-color: var(--accent); border-color: var(--accent); }
+
+    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; color: var(--text-main); font-weight: 700; letter-spacing: -0.03em; }
+    
+    .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 4rem 10%; position: relative; }
+    .hero h1 {
+      font-size: clamp(4rem, 10vw, 8rem);
+      line-height: 0.95;
+      margin-bottom: 2rem;
+      transform: translate3d(var(--hero-x), var(--hero-y), 0);
+      will-change: transform;
+    }
+    .hero h1 span { color: var(--text-muted); display: block; font-size: 0.4em; margin-top: 1rem; letter-spacing: 0; font-weight: 400; }
+    .hero-sub { font-size: 1.2rem; max-width: 600px; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.6; }
+    
+    .scroll-indicator {
+      display: flex; align-items: center; gap: 1rem;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem; font-weight: 600;
+      color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;
+      text-decoration: none; width: fit-content;
+      animation: bounce 2s infinite;
+    }
+    .scroll-indicator svg { width: 20px; height: 20px; fill: var(--accent); }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+
+    section { padding: 8rem 10%; position: relative; }
+    .section-header { max-width: 700px; margin-bottom: 5rem; }
+    .section-header h2 { font-size: 3rem; margin-bottom: 1.5rem; line-height: 1.1; }
+    .section-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+    /* ============ MAP ============ */
+    .world-tabs { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 4rem; justify-content: center; position: relative; z-index: 50; }
+    .world-tab {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-muted); font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600;
+      cursor: none; transition: border-color 0.2s, color 0.2s, background-color 0.2s; padding: 0.8rem 2rem; border-radius: 50px;
+      pointer-events: auto;
+    }
+    .world-tab.active { border-color: var(--accent); color: var(--accent); }
+    .world-tab:hover { background: rgba(255,255,255,0.05); }
+
+    .map-wrap { 
+      display: flex; justify-content: center; align-items: center; 
+      min-height: 700px; 
+      background: rgba(11, 19, 43, 0.65);
+      border-radius: 40px; 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      overflow: hidden; 
+      position: relative;
+      transform: translateZ(0);
+    }
+    .map-panel { display: none; width: 100%; justify-content: center; align-items: center; padding: 2rem; position: relative;}
+    .map-panel.active { display: flex; animation: fadeIn 0.6s ease; }
+    
+    .orbit-container { width: 500px; height: 500px; position: relative; display: flex; justify-content: center; align-items: center; transform: translateZ(0); }
+    
+    .canvas-planet {
+      width: 320px; height: 320px; border-radius: 50%;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 40px rgba(127, 180, 255, 0.1);
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ============ FLOATING SPACE CRAFTS ============ */
+    .orbiting-crafts { 
+      position: absolute; 
+      inset: -20px; 
+      pointer-events: none; 
+      z-index: 10; 
+    }
+    
+    .orbit-craft {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      cursor: none;
+      animation: floatCraft 6s ease-in-out infinite alternate;
+      animation-delay: var(--delay);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 30; 
+      pointer-events: auto;
+      will-change: transform;
+    }
+    
+    .orbit-craft::after {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    .orbit-craft-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    /* Moon Positions */
+    .craft-surveyor { top: 0; left: 0; }
+    .craft-apollo   { top: 0; right: 0; }
+    .craft-alsep    { bottom: 0; left: 0; }
+    .craft-lrv      { bottom: 0; right: 0; }
+
+    /* Mars Positions (9-point ring) */
+    .craft-dawn      { top: 0px; left: 180px; }
+    .craft-viking    { top: 50px; left: 320px; }
+    .craft-near      { top: 180px; left: 380px; }
+    .craft-kepler    { top: 320px; left: 380px; }
+    .craft-pioneer   { top: 400px; left: 250px; }
+    .craft-opp       { top: 400px; left: 110px; }
+    .craft-sojourner { top: 320px; left: 0px; }
+    .craft-insight   { top: 180px; left: 0px; }
+    .craft-ingenuity { top: 50px; left: 110px; }
+
+    /* Deep Space Positions */
+    .craft-deep-dawn    { top: 40px; left: 40px; }
+    .craft-deep-near    { top: 40px; right: 40px; }
+    .craft-deep-kepler  { bottom: 40px; left: 40px; }
+    .craft-deep-pioneer { bottom: 40px; right: 40px; }
+
+    .orbit-craft:hover {
+      transform: scale(1.15) translateY(-10px) !important;
+      z-index: 40;
+    }
+
+    .orbit-craft-inner svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 15px rgba(232, 207, 166, 0.2));
+      transition: transform 0.3s, filter 0.3s;
+    }
+
+    .orbit-craft:hover .orbit-craft-inner svg {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 25px rgba(232, 207, 166, 0.6));
+    }
+
+    /* JS-managed hover (guarantees the reaction even if :hover loses to animation) */
+    .orbit-craft.js-hover {
+      transform: scale(1.15) translateY(-10px) !important;
+      z-index: 40;
+      animation-play-state: paused !important;
+    }
+    .orbit-craft.js-hover .orbit-craft-inner svg {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 25px rgba(232, 207, 166, 0.6));
+    }
+    .orbit-craft.js-hover .craft-label {
+      color: #fff;
+      text-shadow: 0 0 12px var(--accent);
+    }
+
+    .craft-label {
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      white-space: nowrap;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* ============ ANIMATIONS ============ */
+    .anim-scan { transform-origin: center; animation: dishScan 8s ease-in-out infinite alternate; }
+    .anim-spin { transform-origin: center; animation: spin 10s linear infinite; }
+    .anim-blink { animation: blink 2s step-end infinite; }
+    .anim-pulse { animation: pulse 2s ease-in-out infinite; }
+
+    @keyframes dishScan { 0% { transform: rotate(-15deg); } 100% { transform: rotate(15deg); } }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+    @keyframes floatCraft { 0% { transform: translateY(0); } 100% { transform: translateY(-15px); } }
+
+    /* ============ 3D TIMELINE ============ */
+    .timeline-section { overflow: hidden; }
+    
+    .timeline-scene { 
+      width: 100%; height: 500px; position: relative; perspective: 1200px; margin-top: -2rem; 
+      touch-action: none; user-select: none; 
+      cursor: grab;
+    }
+    .timeline-scene:active {
+      cursor: grabbing;
+    }
+    
+    .timeline-carousel {
+      position: absolute; top: 50%; left: 50%;
+      width: 350px; height: 420px;
+      margin-top: -210px; margin-left: -175px;
+      transform-style: preserve-3d;
+    }
+    
+    .timeline-item { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-card); border: 1px solid var(--border-color); 
+      border-radius: 24px; padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between;
+      backface-visibility: hidden; 
+      transition: border-color 0.2s;
+      overflow: hidden;
+    }
+    .timeline-item.active { border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow); }
+
+    .timeline-info { margin-bottom: 2rem; position: relative; z-index: 2; pointer-events: none; }
+    .timeline-item-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .timeline-item-head h3 { font-size: 1.5rem; }
+    
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .status-dot.alive { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse-dot 2s infinite; }
+    .status-dot.silent { background: #555; }
+    @keyframes pulse-dot { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+
+    .timeline-dates { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.5rem; display: block; }
+    .bar-labels { display: flex; gap: 3rem; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .bar-labels span { display: flex; flex-direction: column; gap: 0.2rem; }
+    .bar-labels strong { color: var(--text-main); font-size: 1.2rem; font-family: 'Space Grotesk'; }
+    .fun-fact { font-size: 1rem; color: var(--accent); display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.4; }
+    .fun-fact::before { content: '💡'; font-size: 1rem; margin-top: 2px;}
+
+    /* ============ TIMELINE CRAFT VISUALS ============ */
+    .craft-visual {
+      position: absolute;
+      bottom: 0.9rem;
+      right: 0.6rem;
+      width: 160px;
+      height: 120px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .craft-visual::before {
+      content: '';
+      position: absolute;
+      inset: -12% -8% -6% -8%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 62%, rgba(232, 207, 166, 0.10), rgba(122, 184, 245, 0.05) 45%, transparent 70%);
+      pointer-events: none;
+    }
+    .craft-svg {
+      width: 100%; height: 100%; display: block; overflow: visible;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.45));
+    }
+    .craft-svg .ground-shadow { filter: blur(3px); }
+
+    @keyframes roverIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.8px); } }
+    .craft-svg .rover-body,
+    .craft-svg .lander-body { animation: roverIdle 4.5s ease-in-out infinite; }
+
+    @keyframes wheelSpin { to { transform: rotate(360deg); } }
+    .craft-svg .tread,
+    .craft-svg .spokes {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: wheelSpin 2.8s linear infinite;
+    }
+
+    @keyframes sheenMove {
+      0%   { transform: translateX(-50px); opacity: 0; }
+      12%  { opacity: 0.5; }
+      55%  { transform: translateX(112px); opacity: 0; }
+      100% { transform: translateX(112px); opacity: 0; }
+    }
+    .craft-svg .sheen { animation: sheenMove 6s ease-in-out infinite; }
+
+    @keyframes glowPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+    .craft-svg .glow-pulse { animation: glowPulse 2.4s ease-in-out infinite; }
+
+    @keyframes ledBlink { 0%, 42%, 58%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+    .craft-svg .led { animation: ledBlink 2.2s ease-in-out infinite; }
+
+    @keyframes dustFloat {
+      0%   { transform: translate(0, 0) scale(0.8); opacity: 0; }
+      25%  { opacity: 0.55; }
+      100% { transform: translate(-16px, -28px) scale(1.3); opacity: 0; }
+    }
+    .craft-svg .dust { animation: dustFloat 5.5s linear infinite; }
+    .craft-svg .dust.d2 { animation-delay: 1.8s; }
+    .craft-svg .dust.d3 { animation-delay: 3.4s; }
+
+    @keyframes dishSway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+    .craft-svg .dish {
+      transform-box: fill-box;
+      transform-origin: 50% 90%;
+      animation: dishSway 7s ease-in-out infinite;
+    }
+
+    @keyframes wavePulse { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.85; } }
+    .craft-svg .signal-wave { animation: wavePulse 2.6s ease-in-out infinite; }
+    .craft-svg .signal-wave.wv2 { animation-delay: 0.5s; }
+    .craft-svg .signal-wave.wv3 { animation-delay: 1s; }
+
+    @keyframes laserFlow { to { stroke-dashoffset: -48; } }
+    .craft-svg .laser {
+      stroke-dasharray: 6 8;
+      animation: laserFlow 1.1s linear infinite;
+      filter: drop-shadow(0 0 3px rgba(255, 122, 122, 0.9));
+    }
+
+    @keyframes twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+    .craft-svg .star { animation: twinkle 3.2s ease-in-out infinite; }
+
+    @keyframes mirrorShine { 0%, 100% { opacity: 0.08; } 50% { opacity: 0.3; } }
+    .craft-svg .mirror-shine { animation: mirrorShine 4.5s ease-in-out infinite; }
+
+    .drag-hint { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; opacity: 0.6;}
+    .drag-hint span { font-size: 1.2rem; }
+
+    /* ============ TRANSMISSION CONSOLE ============ */
+    .transmission-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 2rem; }
+    
+    .transmission-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 2.5rem;
+      transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .transmission-card:hover { transform: translateY(-4px); }
+    .transmission-card.playing {
+      border-color: var(--accent);
+      box-shadow: 0 0 60px rgba(232, 207, 166, 0.15), inset 0 0 40px rgba(232, 207, 166, 0.03);
+    }
+
+    .tx-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; gap: 1rem; }
+    .tx-title-group h3 { font-size: 1.4rem; margin-bottom: 0.3rem; }
+    .tx-date { font-family: 'Courier Prime', monospace; font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .tx-status-group { display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem; flex-shrink: 0; }
+    .tx-status {
+      font-family: 'Courier Prime', monospace; font-size: 0.68rem; letter-spacing: 0.18em;
+      color: var(--text-muted); padding: 0.25rem 0.6rem;
+      border: 1px solid var(--border-color); border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s; white-space: nowrap;
+    }
+    .tx-status[data-state="acquiring"] { color: #f5c542; border-color: #f5c542; animation: pulseStatus 0.5s infinite; }
+    .tx-status[data-state="decoding"] { color: #7ab8f5; border-color: #7ab8f5; }
+    .tx-status[data-state="receiving"] { color: var(--accent); border-color: var(--accent); animation: pulseStatus 1.2s infinite; box-shadow: 0 0 10px var(--accent-glow); }
+    .tx-status[data-state="fading"] { color: #666; border-color: #666; }
+    .tx-status[data-state="archived"] { color: #444; border-color: #444; }
+    @keyframes pulseStatus { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+    .sig-bars { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+    .sig-bar { width: 3px; background: var(--accent); border-radius: 1px; opacity: 0.2; transition: opacity 0.2s; }
+    .sig-bar:nth-child(1) { height: 4px; }
+    .sig-bar:nth-child(2) { height: 7px; }
+    .sig-bar:nth-child(3) { height: 10px; }
+    .sig-bar:nth-child(4) { height: 13px; }
+    .sig-bar:nth-child(5) { height: 16px; }
+    .playing .sig-bar { animation: sigPulse 1s infinite; }
+    .playing .sig-bar:nth-child(1) { animation-delay: 0s; }
+    .playing .sig-bar:nth-child(2) { animation-delay: 0.1s; }
+    .playing .sig-bar:nth-child(3) { animation-delay: 0.2s; }
+    .playing .sig-bar:nth-child(4) { animation-delay: 0.3s; }
+    .playing .sig-bar:nth-child(5) { animation-delay: 0.4s; }
+    @keyframes sigPulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+    .tx-console { position: relative; height: 150px; background: linear-gradient(180deg, #050810 0%, #0a0d18 100%); border: 1px solid rgba(232, 207, 166, 0.2); border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem; transition: border-color 0.3s, box-shadow 0.3s; }
+    .playing .tx-console { border-color: rgba(232, 207, 166, 0.5); box-shadow: inset 0 0 20px rgba(232, 207, 166, 0.1); }
+    .tx-console::before {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(232, 207, 166, 0.03) 3px, rgba(232, 207, 166, 0.03) 4px);
+      pointer-events: none; z-index: 2;
+    }
+    .tx-console::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(232, 207, 166, 0.08), transparent 70%); opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1; }
+    .playing .tx-console::after { opacity: 1; }
+    .wave-canvas { width: 100%; height: 100%; display: block; }
+    .tx-overlay {
+      position: absolute; top: 10px; left: 14px; right: 14px;
+      display: flex; justify-content: space-between;
+      font-family: 'Courier Prime', monospace; font-size: 0.7rem;
+      color: var(--accent); opacity: 0.75; letter-spacing: 0.08em;
+      z-index: 3; pointer-events: none;
+    }
+    .tx-overlay span { display: inline-flex; gap: 0.4rem; align-items: center; }
+    .tx-overlay .tx-freq, .tx-overlay .tx-sig { font-weight: 700; }
+    .tx-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(232, 207, 166, 0.1); z-index: 4; }
+    .tx-progress-fill { height: 100%; width: 0%; background: var(--accent); box-shadow: 0 0 8px var(--accent); transition: width 0.15s linear; }
+
+    .tx-message-wrap { margin-bottom: 1.6rem; min-height: 90px; }
+    .tx-segment-label {
+      display: inline-block; font-family: 'Courier Prime', monospace;
+      font-size: 0.65rem; letter-spacing: 0.2em; color: var(--text-muted);
+      opacity: 0.55; margin-bottom: 0.6rem; padding: 0.2rem 0.55rem;
+      border: 1px solid var(--border-color); border-radius: 3px; transition: color 0.2s, border-color 0.2s;
+    }
+    .tx-segment-label.narration { color: #7ab8f5; border-color: rgba(122, 184, 245, 0.4); opacity: 0.9; }
+    .tx-segment-label.quote { color: var(--accent); border-color: var(--accent); opacity: 1; }
+    .tx-segment-label.outro { color: #888; border-color: rgba(255,255,255,0.15); opacity: 0.7; }
+    .tx-message { font-size: 1.05rem; color: var(--text-muted); line-height: 1.7; min-height: 60px; }
+    .tx-placeholder { color: var(--text-muted); opacity: 0.45; font-style: italic; font-size: 0.95rem; font-family: 'Courier Prime', monospace; }
+    .tx-narration { color: var(--text-muted); font-size: 1.02rem; line-height: 1.7; display: inline; }
+    .tx-quote { color: var(--accent); font-size: 1.25rem; line-height: 1.6; font-style: italic; font-weight: 500; display: inline; }
+    .tx-outro { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; font-style: italic; opacity: 0.85; display: inline; }
+    .tx-word { transition: color 0.15s, text-shadow 0.15s; }
+    .tx-narration .tx-word.current { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+    .tx-quote .tx-word.current { color: #fff; text-shadow: 0 0 15px var(--accent), 0 0 25px var(--accent-glow); }
+    .tx-outro .tx-word.current { color: #aaa; text-shadow: 0 0 8px rgba(255,255,255,0.1); }
+
+    .audio-btn {
+      background: transparent; border: 1px solid var(--accent); color: var(--accent);
+      padding: 0.9rem 1.8rem; border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 600;
+      cursor: none; transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      pointer-events: auto; letter-spacing: 0.03em;
+    }
+    .audio-btn:hover { background: var(--accent); color: var(--bg-dark); box-shadow: 0 10px 30px var(--accent-glow); }
+    .playing .audio-btn { background: var(--accent); color: var(--bg-dark); box-shadow: 0 0 25px var(--accent-glow); }
+    .btn-icon { font-size: 1rem; display: inline-block; width: 1em; text-align: center; }
+
+    /* ============ MODAL ============ */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100; }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); width: min(1000px, 95vw); max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; z-index: 101; opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; display: grid; grid-template-columns: 1fr 1.2fr; box-shadow: 0 40px 100px rgba(0,0,0,0.8); }
+    .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+    .modal-close { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.05); border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; color: var(--text-main); font-size: 1.2rem; cursor: none; z-index: 2; transition: background-color 0.2s, color 0.2s, transform 0.2s; pointer-events: auto;}
+    .modal-close:hover { background: var(--accent); color: var(--bg-dark); transform: rotate(90deg); }
+    
+    .modal-media { position: relative; min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; overflow: hidden; border-radius: 32px 0 0 32px; background: #0a0b10; border-right: 1px solid var(--border-color); }
+    .hardware-panel {
+      width: 250px; height: 250px; border-radius: 20px;
+      border: 1px solid var(--accent);
+      background: linear-gradient(135deg, rgba(232,207,166,0.1), rgba(0,0,0,0.8));
+      display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      padding: 2rem; box-shadow: 0 0 40px var(--accent-glow);
+      animation: floatHolo 4s ease-in-out infinite; transition: transform 0.4s, box-shadow 0.4s;
+      position: relative; overflow: hidden;
+    }
+    .hardware-panel::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(232,207,166,0.05) 2px, rgba(232,207,166,0.05) 4px); pointer-events: none; }
+    .hardware-icon { font-size: 4rem; filter: drop-shadow(0 0 15px var(--accent)); margin-bottom: 1rem; z-index: 1; }
+    .hardware-label { font-family: 'Space Grotesk'; font-size: 1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; z-index: 1; font-weight: 600;}
+    .hardware-desc { font-family: 'Courier Prime'; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; z-index: 1; }
+    .modal.hovering-text .hardware-panel { transform: scale(1.05); box-shadow: 0 0 60px var(--accent); }
+    @keyframes floatHolo { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    
+    .modal-badge { position: absolute; bottom: 2rem; font-family: 'Space Grotesk'; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.1em; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.5rem; border-radius: 50px; }
+    .modal-badge.alive { color: var(--accent); border-color: var(--accent); }
+    .modal-badge.silent { color: var(--text-muted); }
+    .terminal-hud { display: flex; gap: 1.5rem; font-family: 'Space Grotesk'; font-size: 0.8rem; color: var(--accent); margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap;}
+    .modal-body { padding: 4rem 3.5rem; pointer-events: auto; }
+    .modal-mission { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .modal-body h2 { font-size: 2.8rem; margin-bottom: 1rem; line-height: 1.1; }
+    .modal-dates { font-size: 1rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+    .modal-hook { font-size: 1.4rem; color: var(--text-main); margin-bottom: 1.5rem; line-height: 1.4; font-weight: 600; }
+    .modal-body p.story-text { font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.8; color: var(--text-muted); min-height: 120px; }
+    .modal-button { font-size: 1.1rem; color: var(--accent) !important; border-top: 1px solid var(--border-color); padding-top: 1.5rem; line-height: 1.5; font-style: italic; }
+    .modal-source { display: block; margin-top: 1rem; font-size: 0.8rem; color: #555; font-family: 'Space Grotesk'; text-transform: uppercase; letter-spacing: 0.05em;}
+
+    @media (max-width: 900px) {
+      .modal { grid-template-columns: 1fr; border-radius: 24px; }
+      .modal-media { min-height: 300px; border-radius: 24px 24px 0 0; border-bottom: 1px solid var(--border-color); padding: 2rem; border-right: none;}
+      .modal-body { padding: 2.5rem 2rem; }
+      .orbit-container { transform: scale(0.6); }
+      .hero { padding: 4rem 5%; }
+      section { padding: 5rem 5%; }
+      .timeline-carousel { width: 280px; height: 380px; margin-top: -190px; margin-left: -140px; }
+      .transmission-grid { grid-template-columns: 1fr; }
+      .canvas-planet { width: 260px; height: 260px; }
+      .tx-console { height: 120px; }
+      .vr-cursor-glow { display: none; }
+      .craft-visual { width: 118px; height: 88px; bottom: 0.7rem; right: 0.5rem; }
+      .map-wrap { min-height: 550px; }
+      .orbit-craft { width: 100px; height: 100px; }
+      .craft-surveyor { top: -15px; left: -15px; }
+      .craft-apollo   { top: -15px; right: -15px; }
+      .craft-alsep    { bottom: -15px; left: -15px; }
+      .craft-lrv      { bottom: -15px; right: -15px; }
+      .craft-label { bottom: -20px; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Shared SVG gradients -->
+  <svg width="0" height="0" style="position:absolute;pointer-events:none;" aria-hidden="true">
+    <defs>
+      <radialGradient id="ufoDome" cx="50%" cy="85%" r="65%">
+        <stop offset="0%" stop-color="#9ec5ff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#3060a0" stop-opacity="0.55"/>
+      </radialGradient>
+      <linearGradient id="ufoBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#d0dced"/>
+        <stop offset="100%" stop-color="#4a5a7a"/>
+      </linearGradient>
+      <linearGradient id="ufoBeam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e8cfa6" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#e8cfa6" stop-opacity="0"/>
+      </linearGradient>
+
+      <linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8f97a8"/>
+        <stop offset="0.5" stop-color="#5f6878"/>
+        <stop offset="1" stop-color="#333a48"/>
+      </linearGradient>
+      <linearGradient id="metalGrad2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#c4cbda"/>
+        <stop offset="1" stop-color="#596272"/>
+      </linearGradient>
+      <linearGradient id="goldFoil" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffd700"/>
+        <stop offset="0.3" stop-color="#b8860b"/>
+        <stop offset="0.6" stop-color="#ffd700"/>
+        <stop offset="1" stop-color="#8b6508"/>
+      </linearGradient>
+      <linearGradient id="dishGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e2e7f0"/>
+        <stop offset="1" stop-color="#7d8698"/>
+      </linearGradient>
+      <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e1f36"/>
+        <stop offset="1" stop-color="#071021"/>
+      </linearGradient>
+      <linearGradient id="sheenGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.35"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <canvas id="cinematic-particles"></canvas>
+
+  <!-- VR UFO LAYER -->
+  <div id="ufo-layer" aria-hidden="true">
+    <div class="ufo-outer" style="--ufo-top: 12%; --depth: 1.2;">
+      <div class="ufo-inner" style="--dur: 42s; --delay: -5s; --size: 55px;">
+        <svg class="ufo-svg" viewBox="0 0 100 60">
+          <path d="M 42 38 L 58 38 L 72 58 L 28 58 Z" fill="url(#ufoBeam)"/>
+          <ellipse cx="50" cy="38" rx="30" ry="4" fill="#1a1a2e" opacity="0.5"/>
+          <ellipse cx="50" cy="34" rx="34" ry="8" fill="url(#ufoBody)"/>
+          <ellipse cx="50" cy="32" rx="30" ry="5" fill="#b8c8e0" opacity="0.4"/>
+          <path d="M 32 30 Q 50 12 68 30 Z" fill="url(#ufoDome)" stroke="#a0c0f0" stroke-width="0.5"/>
+          <ellipse cx="45" cy="22" rx="6" ry="3" fill="#ffffff" opacity="0.3"/>
+          <circle class="light l1" cx="22" cy="35" r="1.6" fill="#ffdd99"/>
+          <circle class="light l2" cx="34" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l3" cx="50" cy="38" r="1.6" fill="#ffdd99"/>
+          <circle class="light l4" cx="66" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l5" cx="78" cy="35" r="1.6" fill="#ffdd99"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="ufo-outer" style="--ufo-top: 30%; --depth: 0.5;">
+      <div class="ufo-inner" style="--dur: 55s; --delay: -18s; --size: 32px;">
+        <svg class="ufo-svg" viewBox="0 0 100 60">
+          <path d="M 42 38 L 58 38 L 72 58 L 28 58 Z" fill="url(#ufoBeam)" opacity="0.6"/>
+          <ellipse cx="50" cy="38" rx="30" ry="4" fill="#1a1a2e" opacity="0.5"/>
+          <ellipse cx="50" cy="34" rx="34" ry="8" fill="url(#ufoBody)"/>
+          <ellipse cx="50" cy="32" rx="30" ry="5" fill="#b8c8e0" opacity="0.4"/>
+          <path d="M 32 30 Q 50 12 68 30 Z" fill="url(#ufoDome)" stroke="#a0c0f0" stroke-width="0.5"/>
+          <circle class="light l1" cx="22" cy="35" r="1.6" fill="#ffdd99"/>
+          <circle class="light l2" cx="34" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l3" cx="50" cy="38" r="1.6" fill="#ffdd99"/>
+          <circle class="light l4" cx="66" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l5" cx="78" cy="35" r="1.6" fill="#ffdd99"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="ufo-outer" style="--ufo-top: 55%; --depth: 1.6;">
+      <div class="ufo-inner" style="--dur: 38s; --delay: -10s; --size: 70px;">
+        <svg class="ufo-svg" viewBox="0 0 100 60">
+          <path d="M 42 38 L 58 38 L 72 58 L 28 58 Z" fill="url(#ufoBeam)"/>
+          <ellipse cx="50" cy="38" rx="30" ry="4" fill="#1a1a2e" opacity="0.55"/>
+          <ellipse cx="50" cy="34" rx="34" ry="8" fill="url(#ufoBody)"/>
+          <ellipse cx="50" cy="32" rx="30" ry="5" fill="#b8c8e0" opacity="0.4"/>
+          <path d="M 32 30 Q 50 12 68 30 Z" fill="url(#ufoDome)" stroke="#a0c0f0" stroke-width="0.5"/>
+          <ellipse cx="45" cy="22" rx="7" ry="3.5" fill="#ffffff" opacity="0.35"/>
+          <circle class="light l1" cx="22" cy="35" r="1.6" fill="#ffdd99"/>
+          <circle class="light l2" cx="34" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l3" cx="50" cy="38" r="1.6" fill="#ffdd99"/>
+          <circle class="light l4" cx="66" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l5" cx="78" cy="35" r="1.6" fill="#ffdd99"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="ufo-outer" style="--ufo-top: 78%; --depth: 0.35;">
+      <div class="ufo-inner" style="--dur: 62s; --delay: -30s; --size: 28px;">
+        <svg class="ufo-svg" viewBox="0 0 100 60">
+          <path d="M 42 38 L 58 38 L 72 58 L 28 58 Z" fill="url(#ufoBeam)" opacity="0.5"/>
+          <ellipse cx="50" cy="38" rx="30" ry="4" fill="#1a1a2e" opacity="0.5"/>
+          <ellipse cx="50" cy="34" rx="34" ry="8" fill="url(#ufoBody)"/>
+          <path d="M 32 30 Q 50 12 68 30 Z" fill="url(#ufoDome)" stroke="#a0c0f0" stroke-width="0.5"/>
+          <circle class="light l1" cx="22" cy="35" r="1.6" fill="#ffdd99"/>
+          <circle class="light l2" cx="34" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l3" cx="50" cy="38" r="1.6" fill="#ffdd99"/>
+          <circle class="light l4" cx="66" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l5" cx="78" cy="35" r="1.6" fill="#ffdd99"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="ufo-outer" style="--ufo-top: 42%; --depth: 0.8;">
+      <div class="ufo-inner" style="--dur: 48s; --delay: -25s; --size: 42px;">
+        <svg class="ufo-svg" viewBox="0 0 100 60">
+          <path d="M 42 38 L 58 38 L 72 58 L 28 58 Z" fill="url(#ufoBeam)" opacity="0.7"/>
+          <ellipse cx="50" cy="38" rx="30" ry="4" fill="#1a1a2e" opacity="0.5"/>
+          <ellipse cx="50" cy="34" rx="34" ry="8" fill="url(#ufoBody)"/>
+          <ellipse cx="50" cy="32" rx="30" ry="5" fill="#b8c8e0" opacity="0.4"/>
+          <path d="M 32 30 Q 50 12 68 30 Z" fill="url(#ufoDome)" stroke="#a0c0f0" stroke-width="0.5"/>
+          <ellipse cx="46" cy="22" rx="5" ry="2.5" fill="#ffffff" opacity="0.3"/>
+          <circle class="light l1" cx="22" cy="35" r="1.6" fill="#ffdd99"/>
+          <circle class="light l2" cx="34" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l3" cx="50" cy="38" r="1.6" fill="#ffdd99"/>
+          <circle class="light l4" cx="66" cy="37" r="1.6" fill="#ffc266"/>
+          <circle class="light l5" cx="78" cy="35" r="1.6" fill="#ffdd99"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- VR CURSOR SPOTLIGHT -->
+  <div class="vr-cursor-glow" id="vr-glow" aria-hidden="true"></div>
+
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
+
+  <div id="main-content">
+    <header class="hero">
+      <h1>Abandoned<span>but not Forgotten.</span></h1>
+      <p class="hero-sub">Since the 1960s, NASA has left hardware across the solar system. From rovers and instruments that completed their science missions to probes still traveling away from Earth, all of them changed what we know.</p>
+      <a href="#map-section" class="scroll-indicator">
+        Scroll to explore
+        <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+      </a>
+    </header>
+
+    <section class="map-section" id="map-section">
+      <div class="section-header">
+        <h2>Where are they now?</h2>
+        <p>Locate the glowing signals left behind across the solar system.</p>
+      </div>
+
+      <div class="world-tabs">
+        <button type="button" class="world-tab active" data-world="moon">The Moon</button>
+        <button type="button" class="world-tab" data-world="mars">Mars</button>
+        <button type="button" class="world-tab" data-world="deep">Deep Space & Asteroids</button>
+      </div>
+
+      <div class="map-wrap" id="map-wrap">
+        <!-- MOON PANEL -->
+        <div class="map-panel active" id="map-moon">
+          <div class="orbit-container">
+            <canvas id="canvas-moon" class="canvas-planet" width="600" height="600"></canvas>
+            
+            <div class="orbiting-crafts">
+              <div class="orbit-craft craft-surveyor" data-id="surveyor" style="--delay: 0s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <g stroke="url(#metalGrad2)" stroke-width="2" stroke-linecap="round" fill="none">
+                      <line x1="35" y1="65" x2="20" y2="85" />
+                      <line x1="65" y1="65" x2="80" y2="85" />
+                      <line x1="50" y1="70" x2="50" y2="90" />
+                      <line x1="35" y1="65" x2="27.5" y2="75" stroke-width="3" />
+                      <line x1="65" y1="65" x2="72.5" y2="75" stroke-width="3" />
+                    </g>
+                    <ellipse cx="20" cy="85" rx="6" ry="2" fill="#555"/>
+                    <ellipse cx="80" cy="85" rx="6" ry="2" fill="#555"/>
+                    <ellipse cx="50" cy="90" rx="6" ry="2" fill="#555"/>
+                    <rect x="30" y="55" width="40" height="15" rx="2" fill="url(#metalGrad)" stroke="#222" stroke-width="1"/>
+                    <rect x="35" y="58" width="30" height="9" fill="url(#goldFoil)" opacity="0.8"/>
+                    <rect x="48" y="25" width="4" height="30" fill="url(#metalGrad2)"/>
+                    <g transform="translate(45, 15)">
+                      <rect x="0" y="0" width="30" height="15" fill="url(#panelGrad)" stroke="#2e4a72" stroke-width="1"/>
+                      <line x1="10" y1="0" x2="10" y2="15" stroke="#1d3557" stroke-width="0.5"/>
+                      <line x1="20" y1="0" x2="20" y2="15" stroke="#1d3557" stroke-width="0.5"/>
+                      <line x1="0" y1="7.5" x2="30" y2="7.5" stroke="#1d3557" stroke-width="0.5"/>
+                      <rect x="0" y="0" width="30" height="15" fill="url(#sheenGrad)" class="anim-scan" style="animation-duration: 5s;"/>
+                    </g>
+                    <g transform="translate(25, 45) rotate(-20)" class="anim-scan">
+                      <ellipse cx="0" cy="0" rx="8" ry="5" fill="url(#dishGrad)" stroke="#333" stroke-width="1"/>
+                      <circle cx="0" cy="0" r="1.5" fill="#e8cfa6" class="anim-pulse"/>
+                      <line x1="0" y1="0" x2="10" y2="10" stroke="url(#metalGrad2)" stroke-width="1.5"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="craft-label">Surveyor</div>
+              </div>
+              
+              <div class="orbit-craft craft-apollo" data-id="apollo11" style="--delay: 1.5s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <g stroke="url(#metalGrad2)" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="30" y1="60" x2="15" y2="80" />
+                      <line x1="70" y1="60" x2="85" y2="80" />
+                      <line x1="40" y1="65" x2="25" y2="90" />
+                      <line x1="60" y1="65" x2="75" y2="90" />
+                    </g>
+                    <ellipse cx="15" cy="80" rx="8" ry="3" fill="#8892a0"/>
+                    <ellipse cx="85" cy="80" rx="8" ry="3" fill="#8892a0"/>
+                    <ellipse cx="25" cy="90" rx="8" ry="3" fill="#8892a0"/>
+                    <ellipse cx="75" cy="90" rx="8" ry="3" fill="#8892a0"/>
+                    <polygon points="25,60 75,60 80,45 20,45" fill="url(#goldFoil)" stroke="#8b6508" stroke-width="1"/>
+                    <polygon points="20,45 80,45 70,40 30,40" fill="url(#metalGrad)"/>
+                    <polygon points="30,40 70,40 65,20 35,20" fill="url(#metalGrad2)" stroke="#333" stroke-width="1"/>
+                    <polygon points="40,30 60,30 58,22 42,22" fill="#111" stroke="#555" stroke-width="1"/>
+                    <polygon points="45,26 55,26 54,23 46,23" fill="#7ab8f5" opacity="0.3"/>
+                    <line x1="50" y1="20" x2="50" y2="5" stroke="#8892a0" stroke-width="1.5"/>
+                    <circle cx="50" cy="5" r="2" fill="#ff3333" class="anim-blink"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Apollo LM</div>
+              </div>
+              
+              <div class="orbit-craft craft-alsep" data-id="alsep" style="--delay: 0.8s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="15" y="75" width="15" height="10" rx="1" fill="url(#metalGrad)" stroke="#222"/>
+                    <rect x="70" y="70" width="15" height="15" rx="1" fill="url(#goldFoil)" stroke="#8b6508"/>
+                    <line x1="22.5" y1="75" x2="22.5" y2="65" stroke="#8892a0" stroke-width="1.5"/>
+                    <circle cx="22.5" cy="65" r="2" fill="#e8cfa6" class="anim-blink"/>
+                    <rect x="40" y="55" width="20" height="25" rx="2" fill="url(#metalGrad2)" stroke="#333"/>
+                    <rect x="42" y="60" width="16" height="6" fill="#fff" opacity="0.8"/>
+                    <path d="M 30 80 Q 35 80 40 75" stroke="#222" stroke-width="1.5" fill="none"/>
+                    <path d="M 70 80 Q 65 80 60 75" stroke="#222" stroke-width="1.5" fill="none"/>
+                    <line x1="50" y1="55" x2="50" y2="30" stroke="#8892a0" stroke-width="2"/>
+                    <ellipse cx="50" cy="30" rx="8" ry="3" fill="url(#dishGrad)" stroke="#555" class="anim-scan" style="transform-origin: 50px 55px;"/>
+                    <line x1="50" y1="55" x2="35" y2="20" stroke="#8892a0" stroke-width="1"/>
+                    <line x1="50" y1="55" x2="65" y2="20" stroke="#8892a0" stroke-width="1"/>
+                    <path d="M 50 25 Q 55 20 50 15" stroke="#e8cfa6" stroke-width="1" fill="none" class="anim-pulse"/>
+                    <path d="M 50 22 Q 58 15 50 8" stroke="#e8cfa6" stroke-width="1" fill="none" class="anim-pulse" style="animation-delay: 0.5s;"/>
+                  </svg>
+                </div>
+                <div class="craft-label">ALSEP</div>
+              </div>
+              
+              <div class="orbit-craft craft-lrv" data-id="lrv" style="--delay: 2.2s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="20" y="55" width="60" height="6" rx="2" fill="url(#metalGrad2)" stroke="#333" stroke-width="1"/>
+                    <line x1="25" y1="61" x2="25" y2="70" stroke="#8892a0" stroke-width="2"/>
+                    <line x1="75" y1="61" x2="75" y2="70" stroke="#8892a0" stroke-width="2"/>
+                    <g transform="translate(25, 75)">
+                      <circle cx="0" cy="0" r="12" fill="#222" stroke="#8892a0" stroke-width="2"/>
+                      <circle cx="0" cy="0" r="8" fill="none" stroke="#555" stroke-width="1" stroke-dasharray="2 2" class="anim-spin"/>
+                      <circle cx="0" cy="0" r="3" fill="#a4b0c0"/>
+                    </g>
+                    <g transform="translate(75, 75)">
+                      <circle cx="0" cy="0" r="12" fill="#222" stroke="#8892a0" stroke-width="2"/>
+                      <circle cx="0" cy="0" r="8" fill="none" stroke="#555" stroke-width="1" stroke-dasharray="2 2" class="anim-spin"/>
+                      <circle cx="0" cy="0" r="3" fill="#a4b0c0"/>
+                    </g>
+                    <path d="M 10 70 A 15 15 0 0 1 40 70" fill="none" stroke="#e8cfa6" stroke-width="1.5"/>
+                    <path d="M 60 70 A 15 15 0 0 1 90 70" fill="none" stroke="#e8cfa6" stroke-width="1.5"/>
+                    <rect x="40" y="45" width="12" height="10" fill="#333" rx="1"/>
+                    <rect x="55" y="45" width="12" height="10" fill="#333" rx="1"/>
+                    <g transform="translate(46, 38)">
+                      <circle cx="0" cy="0" r="6" fill="#fff" stroke="#8892a0"/>
+                      <polygon points="-3,-1 3,-1 2,-4 -2,-4" fill="url(#goldFoil)"/>
+                      <rect x="-4" y="5" width="8" height="10" fill="#fff" rx="2"/>
+                    </g>
+                    <g transform="translate(61, 38)">
+                      <circle cx="0" cy="0" r="6" fill="#fff" stroke="#8892a0"/>
+                      <polygon points="-3,-1 3,-1 2,-4 -2,-4" fill="url(#goldFoil)"/>
+                      <rect x="-4" y="5" width="8" height="10" fill="#fff" rx="2"/>
+                    </g>
+                    <line x1="70" y1="55" x2="85" y2="40" stroke="#8892a0" stroke-width="1.5"/>
+                    <g transform="translate(85, 40) rotate(30)">
+                      <ellipse cx="0" cy="0" rx="8" ry="4" fill="url(#dishGrad)" stroke="#555" stroke-width="1"/>
+                      <circle cx="0" cy="0" r="1.5" fill="#e8cfa6" class="anim-pulse"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="craft-label">Lunar Rover</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- MARS PANEL -->
+        <div class="map-panel" id="map-mars">
+          <div class="orbit-container">
+            <canvas id="canvas-mars" class="canvas-planet" width="600" height="600"></canvas>
+            
+            <div class="orbiting-crafts">
+              <div class="orbit-craft craft-dawn" data-id="dawn" style="--delay: 0s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="35" y="40" width="30" height="20" fill="url(#goldFoil)" stroke="#8b6508" stroke-width="1"/>
+                    <rect x="40" y="45" width="20" height="10" fill="url(#metalGrad2)"/>
+                    <rect x="20" y="38" width="25" height="4" fill="#1d3557" stroke="#2e4a72"/>
+                    <rect x="55" y="38" width="25" height="4" fill="#1d3557" stroke="#2e4a72"/>
+                    <ellipse cx="50" cy="28" rx="12" ry="8" fill="url(#dishGrad)" stroke="#555"/>
+                    <line x1="50" y1="36" x2="50" y2="40" stroke="#555" stroke-width="2"/>
+                    <circle cx="50" cy="65" r="4" fill="#5aa0ff" opacity="0.6" class="anim-pulse"/>
+                    <polygon points="46,65 54,65 60,85 40,85" fill="#5aa0ff" opacity="0.3" class="anim-pulse" style="animation-delay:0.5s;"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Dawn</div>
+              </div>
+
+              <div class="orbit-craft craft-viking" data-id="viking1" style="--delay: 1.2s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="30" y="45" width="40" height="25" rx="3" fill="#e0e0e0" stroke="#999"/>
+                    <line x1="35" y1="70" x2="25" y2="85" stroke="#999" stroke-width="2"/>
+                    <line x1="65" y1="70" x2="75" y2="85" stroke="#999" stroke-width="2"/>
+                    <line x1="50" y1="70" x2="50" y2="85" stroke="#999" stroke-width="2"/>
+                    <ellipse cx="25" cy="85" rx="6" ry="2" fill="#666"/>
+                    <ellipse cx="75" cy="85" rx="6" ry="2" fill="#666"/>
+                    <ellipse cx="50" cy="85" rx="6" ry="2" fill="#666"/>
+                    <ellipse cx="50" cy="35" rx="18" ry="10" fill="url(#dishGrad)" stroke="#777"/>
+                    <line x1="50" y1="45" x2="50" y2="50" stroke="#777" stroke-width="2"/>
+                    <rect x="15" y="55" width="15" height="10" fill="#333" stroke="#555"/>
+                    <rect x="70" y="55" width="15" height="10" fill="#333" stroke="#555"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Viking</div>
+              </div>
+
+              <div class="orbit-craft craft-near" data-id="near" style="--delay: 2.4s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="38" y="38" width="24" height="24" fill="url(#goldFoil)" stroke="#8b6508"/>
+                    <rect x="10" y="42" width="25" height="12" fill="#1d3557" stroke="#2e4a72"/>
+                    <rect x="65" y="42" width="25" height="12" fill="#1d3557" stroke="#2e4a72"/>
+                    <rect x="42" y="18" width="16" height="16" fill="url(#metalGrad2)" stroke="#555"/>
+                    <ellipse cx="50" cy="15" rx="10" ry="4" fill="url(#dishGrad)" stroke="#555"/>
+                    <circle cx="50" cy="50" r="2" fill="#ff3333" class="anim-blink"/>
+                  </svg>
+                </div>
+                <div class="craft-label">NEAR</div>
+              </div>
+
+              <div class="orbit-craft craft-kepler" data-id="kepler" style="--delay: 0.6s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="25" y="40" width="50" height="20" rx="2" fill="url(#metalGrad2)" stroke="#555"/>
+                    <rect x="35" y="38" width="30" height="24" fill="url(#goldFoil)" opacity="0.9"/>
+                    <ellipse cx="25" cy="50" rx="5" ry="10" fill="#111" stroke="#555"/>
+                    <rect x="45" y="25" width="4" height="15" fill="#aaa"/>
+                    <rect x="55" y="25" width="4" height="15" fill="#aaa"/>
+                    <rect x="42" y="20" width="20" height="5" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                    <rect x="42" y="60" width="20" height="5" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Kepler</div>
+              </div>
+
+              <div class="orbit-craft craft-pioneer" data-id="pioneer" style="--delay: 1.8s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="40" rx="25" ry="10" fill="url(#dishGrad)" stroke="#777"/>
+                    <line x1="50" y1="50" x2="50" y2="65" stroke="#aaa" stroke-width="2"/>
+                    <rect x="40" y="60" width="20" height="15" fill="url(#goldFoil)" stroke="#8b6508"/>
+                    <line x1="50" y1="50" x2="25" y2="70" stroke="#aaa" stroke-width="1.5"/>
+                    <line x1="50" y1="50" x2="75" y2="70" stroke="#aaa" stroke-width="1.5"/>
+                    <rect x="70" y="65" width="10" height="15" fill="#333" stroke="#555"/>
+                    <circle cx="75" cy="72" r="2" fill="#ff3333" class="anim-blink"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Pioneer</div>
+              </div>
+
+              <div class="orbit-craft craft-opp" data-id="opportunity" style="--delay: 0.9s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="25" y="45" width="50" height="15" rx="2" fill="#333" stroke="#555"/>
+                    <rect x="20" y="40" width="60" height="5" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                    <circle cx="30" cy="70" r="7" fill="#222" stroke="#777"/>
+                    <circle cx="50" cy="70" r="7" fill="#222" stroke="#777"/>
+                    <circle cx="70" cy="70" r="7" fill="#222" stroke="#777"/>
+                    <line x1="30" y1="60" x2="30" y2="70" stroke="#777" stroke-width="2"/>
+                    <line x1="70" y1="60" x2="70" y2="70" stroke="#777" stroke-width="2"/>
+                    <rect x="45" y="25" width="4" height="20" fill="#aaa"/>
+                    <rect x="40" y="20" width="14" height="8" fill="#fff" stroke="#555"/>
+                    <circle cx="45" cy="24" r="2" fill="#111"/>
+                    <circle cx="50" cy="24" r="2" fill="#111"/>
+                    <line x1="50" y1="48" x2="65" y2="30" stroke="#aaa" stroke-width="2"/>
+                    <ellipse cx="65" cy="30" rx="8" ry="4" fill="url(#dishGrad)" stroke="#555"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Opportunity</div>
+              </div>
+
+              <div class="orbit-craft craft-sojourner" data-id="sojourner" style="--delay: 1.5s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="30" y="45" width="40" height="15" rx="2" fill="url(#metalGrad2)" stroke="#333"/>
+                    <rect x="25" y="42" width="50" height="4" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                    <circle cx="35" cy="68" r="5" fill="#222" stroke="#777"/>
+                    <circle cx="50" cy="68" r="5" fill="#222" stroke="#777"/>
+                    <circle cx="65" cy="68" r="5" fill="#222" stroke="#777"/>
+                    <line x1="35" y1="60" x2="35" y2="68" stroke="#777"/>
+                    <line x1="65" y1="60" x2="65" y2="68" stroke="#777"/>
+                    <rect x="45" y="30" width="3" height="15" fill="#aaa"/>
+                    <rect x="42" y="25" width="9" height="6" fill="#fff" stroke="#555"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Sojourner</div>
+              </div>
+
+              <div class="orbit-craft craft-insight" data-id="insight" style="--delay: 2.1s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <path d="M 40 50 L 60 50 L 55 70 L 45 70 Z" fill="#e0e0e0" stroke="#777"/>
+                    <line x1="45" y1="70" x2="35" y2="85" stroke="#888" stroke-width="2"/>
+                    <line x1="55" y1="70" x2="65" y2="85" stroke="#888" stroke-width="2"/>
+                    <line x1="50" y1="70" x2="50" y2="85" stroke="#888" stroke-width="2"/>
+                    <ellipse cx="50" cy="50" rx="25" ry="8" fill="#1d3557" stroke="#4a7ab5" stroke-width="1"/>
+                    <ellipse cx="50" cy="50" rx="15" ry="5" fill="#2e4a72" stroke="#4a7ab5" stroke-width="1"/>
+                    <ellipse cx="50" cy="50" rx="5" ry="2" fill="#1d3557"/>
+                    <circle cx="50" cy="40" r="3" fill="#fff" class="glow-pulse"/>
+                    <line x1="45" y1="55" x2="25" y2="70" stroke="#e8cfa6" stroke-width="1.5"/>
+                    <circle cx="25" cy="70" r="4" fill="#777"/>
+                  </svg>
+                </div>
+                <div class="craft-label">InSight</div>
+              </div>
+
+              <div class="orbit-craft craft-ingenuity" data-id="ingenuity" style="--delay: 0.3s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="35" y="45" width="30" height="15" rx="2" fill="#333" stroke="#555"/>
+                    <rect x="30" y="40" width="40" height="5" fill="#1d3557" stroke="#2e4a72"/>
+                    <line x1="50" y1="40" x2="50" y2="25" stroke="#aaa" stroke-width="2"/>
+                    <rect x="20" y="20" width="60" height="3" fill="#ddd" class="anim-spin"/>
+                    <line x1="35" y1="60" x2="25" y2="80" stroke="#999" stroke-width="2"/>
+                    <line x1="65" y1="60" x2="75" y2="80" stroke="#999" stroke-width="2"/>
+                    <line x1="50" y1="60" x2="50" y2="80" stroke="#999" stroke-width="2"/>
+                    <circle cx="25" cy="80" r="2" fill="#555"/>
+                    <circle cx="75" cy="80" r="2" fill="#555"/>
+                    <circle cx="50" cy="80" r="2" fill="#555"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Ingenuity</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- DEEP SPACE PANEL -->
+        <div class="map-panel" id="map-deep">
+          <div class="orbit-container">
+            <canvas id="canvas-deep" class="canvas-planet" width="600" height="600"></canvas>
+            <div class="orbiting-crafts">
+              <div class="orbit-craft craft-deep-dawn" data-id="dawn" style="--delay: 0s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="30" y="42" width="40" height="18" rx="2" fill="url(#goldFoil)" stroke="#8b6508" stroke-width="1"/>
+                    <rect x="15" y="40" width="22" height="6" fill="#1d3557" stroke="#2e4a72"/>
+                    <rect x="63" y="40" width="22" height="6" fill="#1d3557" stroke="#2e4a72"/>
+                    <ellipse cx="50" cy="30" rx="14" ry="8" fill="url(#dishGrad)" stroke="#555"/>
+                    <line x1="50" y1="38" x2="50" y2="42" stroke="#555" stroke-width="2"/>
+                    <circle cx="50" cy="70" r="3" fill="#5aa0ff" class="anim-pulse"/>
+                    <polygon points="46,70 54,70 60,88 40,88" fill="#5aa0ff" opacity="0.35" class="anim-pulse" style="animation-delay:0.5s;"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Dawn</div>
+              </div>
+
+              <div class="orbit-craft craft-deep-near" data-id="near" style="--delay: 1s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="38" y="42" width="24" height="20" fill="url(#goldFoil)" stroke="#8b6508"/>
+                    <rect x="15" y="45" width="23" height="10" fill="#1d3557" stroke="#2e4a72"/>
+                    <rect x="62" y="45" width="23" height="10" fill="#1d3557" stroke="#2e4a72"/>
+                    <ellipse cx="50" cy="28" rx="14" ry="8" fill="url(#dishGrad)" stroke="#555"/>
+                    <line x1="50" y1="36" x2="50" y2="42" stroke="#555" stroke-width="2"/>
+                    <circle cx="50" cy="65" r="2" fill="#ff3333" class="anim-blink"/>
+                  </svg>
+                </div>
+                <div class="craft-label">NEAR</div>
+              </div>
+
+              <div class="orbit-craft craft-deep-kepler" data-id="kepler" style="--delay: 2s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="25" y="40" width="50" height="20" rx="2" fill="url(#metalGrad2)" stroke="#555"/>
+                    <rect x="30" y="42" width="30" height="16" fill="url(#goldFoil)" opacity="0.85"/>
+                    <ellipse cx="25" cy="50" rx="4" ry="9" fill="#111" stroke="#555"/>
+                    <rect x="45" y="25" width="3" height="15" fill="#aaa"/>
+                    <rect x="55" y="25" width="3" height="15" fill="#aaa"/>
+                    <rect x="42" y="20" width="20" height="5" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                    <rect x="42" y="60" width="20" height="5" fill="url(#panelGrad)" stroke="#2e4a72"/>
+                    <circle cx="50" cy="50" r="2" fill="#7ab8f5" class="glow-pulse"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Kepler</div>
+              </div>
+
+              <div class="orbit-craft craft-deep-pioneer" data-id="pioneer" style="--delay: 0.5s;">
+                <div class="orbit-craft-inner">
+                  <svg viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="40" rx="20" ry="8" fill="url(#dishGrad)" stroke="#777"/>
+                    <line x1="50" y1="48" x2="50" y2="62" stroke="#aaa" stroke-width="2"/>
+                    <rect x="42" y="58" width="16" height="14" fill="url(#goldFoil)" stroke="#8b6508"/>
+                    <line x1="50" y1="48" x2="25" y2="68" stroke="#aaa" stroke-width="1.5"/>
+                    <line x1="50" y1="48" x2="75" y2="68" stroke="#aaa" stroke-width="1.5"/>
+                    <rect x="20" y="63" width="10" height="10" fill="#333" stroke="#555"/>
+                    <rect x="70" y="63" width="10" height="10" fill="#333" stroke="#555"/>
+                    <circle cx="50" cy="40" r="1.5" fill="#e8cfa6" class="anim-pulse"/>
+                  </svg>
+                </div>
+                <div class="craft-label">Pioneer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="timeline-section" id="timeline">
+      <div class="section-header" style="text-align: center; margin: 0 auto 2rem;">
+        <h2>Designed for a moment.<br>Worked for years.</h2>
+        <p>Click and drag to spin the timeline. See how long they actually survived.</p>
+      </div>
+      
+      <div class="timeline-scene">
+        <div class="timeline-carousel" id="timeline-carousel"></div>
+      </div>
+      <div class="drag-hint"><span>↔</span> Drag to explore</div>
+    </section>
+
+    <section class="transmission-section">
+      <div class="section-header">
+        <h2>The Last Transmissions</h2>
+        <p>When the dust came, they couldn't send data. They couldn't send images. But they could still send a voice.</p>
+      </div>
+      <div class="transmission-grid">
+        
+        <div class="transmission-card" data-id="insight">
+          <div class="tx-header">
+            <div class="tx-title-group">
+              <h3>InSight Lander</h3>
+              <span class="tx-date">Final Transmission · Dec 2022</span>
+            </div>
+            <div class="tx-status-group">
+              <span class="tx-status" data-state="idle">STANDBY</span>
+              <div class="sig-bars" aria-hidden="true">
+                <span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span>
+              </div>
+            </div>
+          </div>
+          <div class="tx-console">
+            <canvas class="wave-canvas"></canvas>
+            <div class="tx-overlay">
+              <span>FREQ <span class="tx-freq">8.42</span> GHz</span>
+              <span>SIG <span class="tx-sig">−98</span> dBm</span>
+            </div>
+            <div class="tx-progress"><div class="tx-progress-fill"></div></div>
+          </div>
+          <div class="tx-message-wrap">
+            <span class="tx-segment-label">ARCHIVED</span>
+            <p class="tx-message"><span class="tx-placeholder">Signal archived · Awaiting playback</span></p>
+          </div>
+          <button type="button" class="audio-btn">
+            <span class="btn-icon">▶</span>
+            <span class="btn-label">Receive Transmission</span>
+          </button>
+        </div>
+
+        <div class="transmission-card" data-id="opportunity">
+          <div class="tx-header">
+            <div class="tx-title-group">
+              <h3>Opportunity Rover</h3>
+              <span class="tx-date">Final Transmission · June 2018</span>
+            </div>
+            <div class="tx-status-group">
+              <span class="tx-status" data-state="idle">STANDBY</span>
+              <div class="sig-bars" aria-hidden="true">
+                <span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span><span class="sig-bar"></span>
+              </div>
+            </div>
+          </div>
+          <div class="tx-console">
+            <canvas class="wave-canvas"></canvas>
+            <div class="tx-overlay">
+              <span>FREQ <span class="tx-freq">7.18</span> GHz</span>
+              <span>SIG <span class="tx-sig">−104</span> dBm</span>
+            </div>
+            <div class="tx-progress"><div class="tx-progress-fill"></div></div>
+          </div>
+          <div class="tx-message-wrap">
+            <span class="tx-segment-label">ARCHIVED</span>
+            <p class="tx-message"><span class="tx-placeholder">Signal archived · Awaiting playback</span></p>
+          </div>
+          <button type="button" class="audio-btn">
+            <span class="btn-icon">▶</span>
+            <span class="btn-label">Receive Transmission</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="cta-section" style="text-align: center; border-top: 1px solid var(--border-color);">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="font-size: 3rem; margin-bottom: 1.5rem;">They're still out there.</h2>
+        <p style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 3rem;">Right now, on the Moon, a mirror is waiting for a laser from Earth. On Mars, a lander covered in dust is still being photographed by an orbiter that checks on it like an old friend.</p>
+        <h2 style="font-size: 4rem; color: var(--accent);">Abandoned.<br>But not forgotten.</h2>
+        <p style="margin-top: 4rem; font-size: 0.8rem; color: #555;">Data sourced from NASA Space Science Data Coordinated Archive (NSSDCA) and NASA Explore.</p>
+      </div>
+    </section>
+
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal" id="modal">
+      <button type="button" class="modal-close" id="modal-close">✕</button>
+      <div class="modal-media">
+        <div class="hardware-panel">
+          <div class="hardware-icon" id="modal-icon">🛰️</div>
+          <div class="hardware-label">NASA ARCHIVE</div>
+          <div class="hardware-desc" id="modal-type">HARDWARE DATA</div>
+        </div>
+        <div class="modal-badge" id="modal-status"></div>
+      </div>
+      <div class="modal-body" id="modal-text-body">
+        <div class="terminal-hud">
+          <span>SIG: <span id="hud-sig">STRONG</span></span>
+          <span>PING: <span id="hud-ping">2.4s</span></span>
+          <span>DATA: <span id="hud-data">99%</span></span>
+        </div>
+        <p class="modal-mission" id="modal-mission"></p>
+        <h2 id="modal-title"></h2>
+        <p class="modal-dates" id="modal-dates"></p>
+        <p class="modal-hook" id="modal-hook"></p>
+        <p class="story-text" id="modal-story"></p>
+        <p class="modal-button" id="modal-button"></p>
+        <span class="modal-source">Source: NASA NSSDCA</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // 1. PLANET CANVAS RENDERER
+    // ============================================================
+    function renderPlanet(canvasId, type) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2, r = w / 2.5;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const grad = ctx.createRadialGradient(cx - r/3, cy - r/3, r/10, cx, cy, r);
+      if (type === 'moon') {
+        grad.addColorStop(0, '#b0b0b0'); grad.addColorStop(0.6, '#5a5a5a'); grad.addColorStop(1, '#111111');
+      } else if (type === 'mars') {
+        grad.addColorStop(0, '#e07a5f'); grad.addColorStop(0.6, '#a4402b'); grad.addColorStop(1, '#2a0a05');
+      } else {
+        grad.addColorStop(0, '#1a2a40'); grad.addColorStop(0.7, '#050a14'); grad.addColorStop(1, '#000000');
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      if (type === 'moon' || type === 'mars') {
+        ctx.globalCompositeOperation = 'source-atop';
+        for (let i = 0; i < 40; i++) {
+          const cX = cx + (Math.random() - 0.5) * r * 1.8;
+          const cY = cy + (Math.random() - 0.5) * r * 1.8;
+          const cR = Math.random() * r * 0.15 + 2;
+          if (Math.hypot(cX - cx, cY - cy) > r - cR) continue;
+          const cGrad = ctx.createRadialGradient(cX - cR/3, cY - cR/3, 1, cX, cY, cR);
+          if (type === 'moon') {
+            cGrad.addColorStop(0, 'rgba(0,0,0,0.3)');
+            cGrad.addColorStop(0.8, 'rgba(0,0,0,0.1)');
+            cGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+          } else {
+            cGrad.addColorStop(0, 'rgba(0,0,0,0.4)');
+            cGrad.addColorStop(0.8, 'rgba(0,0,0,0.1)');
+            cGrad.addColorStop(1, 'rgba(255,200,150,0.1)');
+          }
+          ctx.beginPath();
+          ctx.arc(cX, cY, cR, 0, Math.PI * 2);
+          ctx.fillStyle = cGrad;
+          ctx.fill();
+        }
+        if (type === 'mars') {
+          ctx.beginPath();
+          ctx.ellipse(cx, cy - r * 0.9, r * 0.4, r * 0.2, 0, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.4)';
+          ctx.fill();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = type === 'deep' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    renderPlanet('canvas-moon', 'moon');
+    renderPlanet('canvas-mars', 'mars');
+    renderPlanet('canvas-deep', 'deep');
+
+    // ============================================================
+    // 2. CURSOR + PARTICLES + VR EFFECTS
+    // ============================================================
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorRing = document.getElementById('cursor-ring');
+    const vrGlow = document.getElementById('vr-glow');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    let targetPx = 0, targetPy = 0, targetHeroX = 0, targetHeroY = 0;
+    let currentPx = 0, currentPy = 0, currentHeroX = 0, currentHeroY = 0;
+    const mouse = { x: null, y: null, radius: 150 };
+
+    const pCanvas = document.getElementById('cinematic-particles');
+    const pCtx = pCanvas.getContext('2d');
+    let particles = [];
+    let pWidth, pHeight;
+
+    function resizeCanvas() {
+      pWidth = window.innerWidth;
+      pHeight = window.innerHeight;
+      pCanvas.width = pWidth;
+      pCanvas.height = pHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() { this.reset(); this.y = Math.random() * pHeight; }
+      reset() {
+        this.x = Math.random() * pWidth;
+        this.y = pHeight + 10;
+        this.size = Math.random() * 2.5 + 0.5;
+        this.speedY = -(Math.random() * 0.3 + 0.1);
+        this.speedX = (Math.random() - 0.5) * 0.2;
+        this.opacity = Math.random() * 0.8 + 0.1;
+        this.isGold = Math.random() > 0.8;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        if (mouse.x !== null) {
+          const dx = this.x - mouse.x;
+          const dy = this.y - mouse.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist > 0.01 && dist < mouse.radius) {
+            const force = (mouse.radius - dist) / mouse.radius;
+            this.x += (dx / dist) * force * 1.5;
+            this.y += (dy / dist) * force * 1.5;
+          }
+        }
+        if (this.y < -10) this.reset();
+      }
+      draw() {
+        pCtx.globalAlpha = this.opacity;
+        pCtx.fillStyle = this.isGold ? '#e8cfa6' : '#ffffff';
+        pCtx.beginPath();
+        pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        pCtx.fill();
+      }
+    }
+    for (let i = 0; i < 35; i++) particles.push(new Particle());
+
+    function animateLoop() {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      cursorRing.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+
+      currentPx += (targetPx - currentPx) * 0.1;
+      currentPy += (targetPy - currentPy) * 0.1;
+      currentHeroX += (targetHeroX - currentHeroX) * 0.1;
+      currentHeroY += (targetHeroY - currentHeroY) * 0.1;
+
+      document.documentElement.style.setProperty('--px', currentPx + 'px');
+      document.documentElement.style.setProperty('--py', currentPy + 'px');
+      document.documentElement.style.setProperty('--hero-x', currentHeroX + 'px');
+      document.documentElement.style.setProperty('--hero-y', currentHeroY + 'px');
+
+      pCtx.clearRect(0, 0, pWidth, pHeight);
+      particles.forEach(p => { p.update(); p.draw(); });
+      pCtx.globalAlpha = 1.0;
+
+      requestAnimationFrame(animateLoop);
+    }
+    animateLoop();
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      mouse.x = e.clientX; mouse.y = e.clientY;
+      cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+      vrGlow.style.left = mouseX + 'px';
+      vrGlow.style.top = mouseY + 'px';
+
+      const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+      const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+      
+      targetPx = -nx * 15;
+      targetPy = -ny * 15;
+      targetHeroX = -nx * 12;
+      targetHeroY = -ny * 12;
+    });
+    window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+    const HOVER_SELECTOR = 'a, button, .world-tab, .transmission-card, .orbit-craft';
+    document.addEventListener('pointerover', (e) => {
+      const hov = e.target.closest && e.target.closest(HOVER_SELECTOR);
+      if (hov) cursorRing.classList.add('hovering');
+    });
+    document.addEventListener('pointerout', (e) => {
+      const rel = e.relatedTarget;
+      const stillHover = rel && rel.closest && rel.closest(HOVER_SELECTOR);
+      if (!stillHover) cursorRing.classList.remove('hovering');
+    });
+
+    // ============================================================
+    // 3. ARTIFACT DATA
+    // ============================================================
+    const artifacts = {
+      apollo11: { name: "Apollo 11 Lunar Module (Eagle)", mission: "Apollo 11 · 1969", dates: "Placed July 1969 · Fate Unknown", status: "silent", statusLabel: "Crashed into Moon", icon: "🦅", type: "LUNAR MODULE", hook: "The descent stage was left behind as a launch pad. The ascent stage was jettisoned and crashed.", story: "The Apollo 11 LM 'Eagle' was the first crewed vehicle to land on the Moon. After Armstrong and Aldrin returned to the CSM, the LM was jettisoned into lunar orbit on 22 July 1969. Its fate is not known, but it is assumed that it crashed into the lunar surface sometime within the following 1 to 4 months. The descent stage remains at Mare Tranquilitatis.", button: "It carried the first humans to the surface. Its final resting place remains a mystery." },
+      alsep: { name: "ALSEP Scientific Packages", mission: "Apollo Missions · 1969-1977", dates: "Placed 1969 · Shut down 1977", status: "silent", statusLabel: "Signal Lost", icon: "📡", type: "SCIENCE PACKAGE", hook: "Seismometers left behind to listen to the Moon.", story: "Apollo astronauts left behind the Apollo Lunar Surface Experiments Packages (ALSEP). These included seismometers and magnetometers. They ran on nuclear power and transmitted data back to Earth for years after the astronauts left. They discovered moonquakes and proved the Moon had a crust.", button: "They were finally switched off in 1977 due to budget cuts, not because they broke." },
+      surveyor: { name: "Surveyor Landers", mission: "Surveyor Program · 1966-1968", dates: "Landed 1966 · Silent since 1968", status: "silent", statusLabel: "Signal Lost", icon: "📸", type: "ROBOTIC PROBE", hook: "Robotic probes that proved soft landings were possible.", story: "Before humans could land on the Moon, NASA sent the Surveyor robots. They proved that a spacecraft wouldn't sink into the lunar dust. Seven Surveyor landers were sent; five succeeded. Some were visited by later Apollo crews, who brought pieces back home.", button: "They paved the way for every human footprint on the Moon." },
+      lrv: { name: "Lunar Roving Vehicle", mission: "Apollo 15, 16, 17 · 1971-1972", dates: "Placed 1971 · Left on Moon", status: "silent", statusLabel: "Abandoned on Moon", icon: "🚙", type: "LUNAR ROVER", hook: "The first car on the Moon.", story: "The Lunar Roving Vehicle (LRV) was used on the last three Apollo missions to allow astronauts to travel farther from the landing site. Three rovers were left on the Moon. They are still there, parked in the dust, with their batteries long dead.", button: "They allowed astronauts to drive on another world." },
+      sojourner: { name: "Sojourner Rover", mission: "Mars Pathfinder · 1997", dates: "Landed July 1997 · Silent since Sept 1997", status: "silent", statusLabel: "Signal Lost", icon: "🚙", type: "ROVER", hook: "The first rover on Mars. Delivered by the Pathfinder lander.", story: "Sojourner was a microwave-oven-sized rover that proved we could drive on another planet. It was only meant to last 7 days, but it survived for 83 days. The Pathfinder lander that brought it was renamed the Sagan Memorial Station after its final communication was lost on Sept. 27, 1997.", button: "It is now permanently parked on the red dust of Mars." },
+      opportunity: { name: "Opportunity Rover", mission: "Mars Exploration Rover · 2004 to 2018", dates: "Landed January 2004 · Silent since June 2018", status: "silent", statusLabel: "Signal Lost", icon: "🚙", type: "ROVER", hook: "It was designed for 90 days. It kept going for almost fifteen years.", story: "Opportunity landed on Mars in 2004 with a 90-day warranty. It drove for 14 years and 46 days. It traveled over 45 kilometres, farther than any rover before it. It found evidence that Mars once had liquid water. In June 2018, a planet-wide dust storm blocked the Sun for months. Its last message was, in effect: 'My battery is low and it is getting dark.'", button: "NASA declared it dead in February 2019. It is still on Mars, parked where the storm caught it." },
+      insight: { name: "InSight Lander", mission: "InSight · 2018 to 2022", dates: "Landed November 2018 · Silent since December 2022", status: "silent", statusLabel: "Signal Lost", icon: "📡", type: "LANDER", hook: "Mars has a heartbeat. This machine heard it.", story: "InSight landed on Mars with one job: listen. It carried a seismometer, a sensitive ear pressed to the red planet's surface. Over four years, it detected more than 1,300 marsquakes, proving Mars is not geologically dead. It mapped the planet's insides for the first time. Then the dust came. Its solar panels were buried.", button: "'My power's really low, so this may be the last image I can send.' InSight's last message, December 2022." },
+      viking1: { name: "Viking 1 Lander", mission: "Viking 1 · 1976 to 1982", dates: "Landed July 1976 · Silent since November 1982", status: "silent", statusLabel: "Signal Lost", icon: "📸", type: "LANDER", hook: "The first U.S. lander to successfully operate on Mars.", story: "Viking 1 landed on Mars on July 20, 1976. It sent back the first clear image of the Martian surface. It ran biology experiments looking for signs of life, and kept working for six years far past its design life. It operated until Nov. 11, 1982, when a faulty command sent from Earth resulted in an interruption of communications.", button: "It was the first voice from another world. It is still the reason we keep listening." },
+      dawn: { name: "Dawn Spacecraft", mission: "Dawn Mission · 2007 to 2018", dates: "Launched 2007 · Ran out of fuel 2018", status: "silent", statusLabel: "Unpowered Orbit", icon: "🛰️", type: "ORBITER", hook: "It mapped the two largest objects in the asteroid belt.", story: "Dawn was the first spacecraft to orbit two separate extraterrestrial bodies: Vesta and Ceres. It revealed the secrets of the early solar system. In 2018, it finally ran out of hydrazine fuel. It remains in a perpetual, unpowered orbit around Ceres, a silent monument to the dwarf planet.", button: "It is still circling Ceres today, but it will never speak again." },
+      near: { name: "NEAR Shoemaker", mission: "NEAR Mission · 1996 to 2001", dates: "Landed on asteroid Eros · 2001", status: "silent", statusLabel: "Left on Eros", icon: "☄️", type: "LANDER", hook: "The first spacecraft to orbit and land on an asteroid.", story: "NEAR Shoemaker was never designed to land. But at the end of its mission, scientists decided to try touching down on asteroid 433 Eros. It survived the slow descent at 4 mph and sent back data for two more weeks before being shut down. It rests on the surface of the asteroid to this day.", button: "It rests on an asteroid that is currently traveling around the Sun." },
+      kepler: { name: "Kepler Space Telescope", mission: "Kepler Mission · 2009 to 2018", dates: "Launched 2009 · Ran out of fuel 2018", status: "silent", statusLabel: "Drifting", icon: "🔭", type: "TELESCOPE", hook: "It found thousands of planets outside our solar system.", story: "Kepler revolutionized our understanding of the universe by hunting for exoplanets. It stared at one patch of sky for years, measuring the tiny dips in starlight caused by planets passing in front of them. It discovered over 2,600 planets. When it ran out of fuel, it was placed in a safe, Earth-trailing orbit.", button: "It is drifting silently through space, a relic of the golden age of planet hunting." },
+      pioneer: { name: "Pioneer 10 & 11", mission: "Pioneer Program · 1972 to 2003", dates: "Launched 1972 · Silent since 2003", status: "silent", statusLabel: "Interstellar Space", icon: "🛰️", type: "PROBE", hook: "Early deep-space probes that explored the outer planets.", story: "Pioneer 10 was the first mission to the outer planets and the first to fly through the asteroid belt. It crossed the orbit of Neptune in 1983, becoming the first human-made object to go beyond the furthest planet. Both Pioneer 10 and 11 are now drifting silently out of the solar system.", button: "Pioneer 10 is heading towards the star Aldebaran. It will arrive in about two million years." },
+      ingenuity: { name: "Ingenuity Helicopter", mission: "Mars 2020 · 2021 to 2024", dates: "First flight April 2021 · Retired Jan 2024", status: "silent", statusLabel: "Grounded", icon: "🚁", type: "HELICOPTER", hook: "The first aircraft to fly on another planet.", story: "Ingenuity was a 4-pound helicopter that hitched a ride to Mars on the Perseverance rover. It was meant to make 5 test flights over 30 days. Instead, it flew 72 times over nearly three years. It survived harsh winters and dust storms. In January 2024, it sustained damage to its rotor blades during a landing and was permanently grounded.", button: "It proved that powered flight on another world is possible." },
+      phoenix: { name: "Phoenix Lander", mission: "Phoenix · 2008", dates: "Landed May 2008 · Silent since Nov 2008", status: "silent", statusLabel: "Signal Lost", icon: "📡", type: "LANDER", hook: "It dug into the Martian arctic and found water ice.", story: "Phoenix landed in the northern polar region of Mars. It used a robotic arm to dig into the soil and confirmed the presence of water ice just beneath the surface. It was powered by solar panels, but as winter approached and the sun set for months, the lander lost power and went silent.", button: "It tasted the water on Mars." },
+      spirit: { name: "Spirit Rover", mission: "Mars Exploration Rover · 2004 to 2010", dates: "Landed Jan 2004 · Silent since Mar 2010", status: "silent", statusLabel: "Signal Lost", icon: "🚙", type: "ROVER", hook: "The twin of Opportunity. It got stuck, but kept doing science.", story: "Spirit landed three weeks before Opportunity. It was a formidable field geologist, discovering evidence of past volcanic activity and hot springs. In 2009, its wheels broke through a crust and it became stuck in soft sand. It kept working as a stationary science platform until it lost power during a harsh Martian winter in 2010.", button: "It refused to give up until the very end." }
+    };
+
+    // ============================================================
+    // 4. MODAL
+    // ============================================================
+    const backdrop = document.getElementById('modal-backdrop');
+    const modal = document.getElementById('modal');
+    const modalTextBody = document.getElementById('modal-text-body');
+    let typewriterTimeout;
+
+    modalTextBody.addEventListener('mouseenter', () => { modal.classList.add('hovering-text'); cursorRing.classList.add('hovering'); });
+    modalTextBody.addEventListener('mouseleave', () => { modal.classList.remove('hovering-text'); cursorRing.classList.remove('hovering'); });
+
+    function typeWriter(text, i, el) {
+      if (i < text.length) {
+        el.textContent += text.charAt(i);
+        typewriterTimeout = setTimeout(() => typeWriter(text, i + 1, el), 15);
+      }
+    }
+
+    function openModal(id) {
+      const item = artifacts[id];
+      if (!item) return;
+
+      clearTimeout(typewriterTimeout);
+      document.getElementById('modal-icon').textContent = item.icon;
+      document.getElementById('modal-type').textContent = item.type;
+      document.getElementById('modal-mission').textContent = item.mission;
+      document.getElementById('modal-title').textContent = item.name;
+      document.getElementById('modal-dates').textContent = item.dates;
+      document.getElementById('modal-hook').textContent = item.hook;
+      document.getElementById('modal-button').textContent = item.button;
+
+      const storyEl = document.getElementById('modal-story');
+      storyEl.textContent = '';
+      typeWriter(item.story, 0, storyEl);
+
+      const isAlive = item.status === 'alive';
+      document.getElementById('hud-sig').textContent = isAlive ? 'STRONG' : 'FAINT';
+      document.getElementById('hud-sig').style.color = isAlive ? 'var(--accent)' : 'var(--text-muted)';
+      document.getElementById('hud-ping').textContent = isAlive ? '0.8s' : 'LOST';
+      document.getElementById('hud-data').textContent = isAlive ? '100%' : '12%';
+
+      const badge = document.getElementById('modal-status');
+      badge.textContent = item.statusLabel;
+      badge.className = 'modal-badge ' + (isAlive ? 'alive' : 'silent');
+
+      backdrop.classList.add('open');
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      clearTimeout(typewriterTimeout);
+      backdrop.classList.remove('open');
+      modal.classList.remove('open');
+      modal.classList.remove('hovering-text');
+      cursorRing.classList.remove('hovering');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // Robust document-level delegation — fires for EVERY craft (Moon, Mars, Deep Space)
+    document.addEventListener('click', (e) => {
+      const craft = e.target.closest && e.target.closest('.orbit-craft');
+      if (craft && craft.dataset.id) openModal(craft.dataset.id);
+    });
+
+    // JS-managed hover state — guarantees scale/glow reaction on all panels
+    document.addEventListener('pointerover', (e) => {
+      const craft = e.target.closest && e.target.closest('.orbit-craft');
+      if (craft) craft.classList.add('js-hover');
+    });
+    document.addEventListener('pointerout', (e) => {
+      const craft = e.target.closest && e.target.closest('.orbit-craft');
+      if (craft) {
+        const next = e.relatedTarget;
+        if (!next || !next.closest || !next.closest('.orbit-craft')) {
+          craft.classList.remove('js-hover');
+        }
+      }
+    });
+
+    document.querySelectorAll('.world-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.world-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.map-panel').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('map-' + tab.dataset.world);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // ============================================================
+    // 5. 3D TIMELINE
+    // ============================================================
+    const ROVER_SVG = `
+      <svg class="craft-svg rover-svg" viewBox="0 0 200 150" aria-hidden="true">
+        <ellipse class="ground-shadow" cx="100" cy="136" rx="72" ry="6" fill="#000" opacity="0.5"/>
+        <circle class="dust" cx="48" cy="128" r="1.3" fill="#c9a87c"/>
+        <circle class="dust d2" cx="120" cy="131" r="1.1" fill="#c9a87c"/>
+        <circle class="dust d3" cx="152" cy="127" r="1.4" fill="#c9a87c"/>
+        <g class="rover-body">
+          <g fill="none" stroke="#59627a" stroke-width="2.4" stroke-linecap="round">
+            <path d="M 62 118 L 76 104 L 96 104"/>
+            <path d="M 100 118 L 100 104"/>
+            <path d="M 138 118 L 124 104 L 104 104"/>
+          </g>
+          <g transform="translate(62,118)">
+            <circle r="13" fill="#12141a" stroke="#3a4252" stroke-width="1.6"/>
+            <circle class="tread" r="10.6" fill="none" stroke="#5b6478" stroke-width="3" stroke-dasharray="4 3.4"/>
+            <circle r="5" fill="#242a36" stroke="#6b7488" stroke-width="1"/>
+            <g class="spokes" stroke="#8d96aa" stroke-width="1.3">
+              <line x1="-4" y1="0" x2="4" y2="0"/>
+              <line x1="0" y1="-4" x2="0" y2="4"/>
+            </g>
+          </g>
+          <g transform="translate(100,118)">
+            <circle r="13" fill="#12141a" stroke="#3a4252" stroke-width="1.6"/>
+            <circle class="tread" r="10.6" fill="none" stroke="#5b6478" stroke-width="3" stroke-dasharray="4 3.4"/>
+            <circle r="5" fill="#242a36" stroke="#6b7488" stroke-width="1"/>
+            <g class="spokes" stroke="#8d96aa" stroke-width="1.3">
+              <line x1="-4" y1="0" x2="4" y2="0"/>
+              <line x1="0" y1="-4" x2="0" y2="4"/>
+            </g>
+          </g>
+          <g transform="translate(138,118)">
+            <circle r="13" fill="#12141a" stroke="#3a4252" stroke-width="1.6"/>
+            <circle class="tread" r="10.6" fill="none" stroke="#5b6478" stroke-width="3" stroke-dasharray="4 3.4"/>
+            <circle r="5" fill="#242a36" stroke="#6b7488" stroke-width="1"/>
+            <g class="spokes" stroke="#8d96aa" stroke-width="1.3">
+              <line x1="-4" y1="0" x2="4" y2="0"/>
+              <line x1="0" y1="-4" x2="0" y2="4"/>
+            </g>
+          </g>
+          <rect x="58" y="90" width="84" height="16" rx="4" fill="url(#metalGrad)" stroke="#202632" stroke-width="1"/>
+          <rect x="64" y="86" width="72" height="6" rx="2" fill="#3c4454"/>
+          <circle class="glow-pulse" cx="140" cy="98" r="1.5" fill="#ffc266"/>
+          <g class="panel">
+            <rect x="62" y="68" width="88" height="18" rx="2.5" fill="url(#panelGrad)" stroke="#2e4a72" stroke-width="1"/>
+            <g stroke="#1d3557" stroke-width="0.6" opacity="0.9">
+              <line x1="62" y1="77" x2="150" y2="77"/>
+              <line x1="73" y1="68" x2="73" y2="86"/>
+              <line x1="84" y1="68" x2="84" y2="86"/>
+              <line x1="95" y1="68" x2="95" y2="86"/>
+              <line x1="106" y1="68" x2="106" y2="86"/>
+              <line x1="117" y1="68" x2="117" y2="86"/>
+              <line x1="128" y1="68" x2="128" y2="86"/>
+              <line x1="139" y1="68" x2="139" y2="86"/>
+            </g>
+            <rect class="sheen" x="62" y="68" width="24" height="18" fill="url(#sheenGrad)" opacity="0"/>
+          </g>
+          <rect x="116" y="42" width="3" height="26" fill="#8d96aa"/>
+          <rect x="108" y="33" width="19" height="11" rx="2.5" fill="url(#metalGrad2)" stroke="#3a4252" stroke-width="0.8"/>
+          <circle cx="124" cy="38.5" r="2.6" fill="#0a1220" stroke="#7ab8f5" stroke-width="1"/>
+          <circle class="glow-pulse" cx="124" cy="38.5" r="1.2" fill="#8ec8ff"/>
+          <line x1="54" y1="90" x2="48" y2="72" stroke="#8d96aa" stroke-width="1.8"/>
+          <ellipse cx="46" cy="68" rx="8.5" ry="5.2" fill="url(#dishGrad)" stroke="#59627a" stroke-width="0.8"/>
+          <circle class="glow-pulse" cx="46" cy="68" r="1.8" fill="#e8cfa6"/>
+          <line x1="98" y1="86" x2="92" y2="60" stroke="#6b7488" stroke-width="1.2"/>
+          <circle class="led" cx="92" cy="59" r="1.6" fill="#ffb84d"/>
+        </g>
+      </svg>`;
+
+    const LANDER_SVG = `
+      <svg class="craft-svg lander-svg" viewBox="0 0 200 150" aria-hidden="true">
+        <ellipse class="ground-shadow" cx="100" cy="136" rx="66" ry="6" fill="#000" opacity="0.5"/>
+        <circle class="dust" cx="52" cy="130" r="1.2" fill="#c9a87c"/>
+        <circle class="dust d2" cx="146" cy="129" r="1.1" fill="#c9a87c"/>
+        <g class="lander-body">
+          <g stroke="#7f889c" stroke-width="2.6" stroke-linecap="round">
+            <line x1="80" y1="126" x2="88" y2="100"/>
+            <line x1="120" y1="126" x2="112" y2="100"/>
+            <line x1="100" y1="130" x2="100" y2="102"/>
+          </g>
+          <g fill="#59627a">
+            <ellipse cx="78" cy="127" rx="7" ry="2.6"/>
+            <ellipse cx="122" cy="127" rx="7" ry="2.6"/>
+            <ellipse cx="100" cy="131" rx="7" ry="2.6"/>
+          </g>
+          <g class="panel">
+            <rect x="34" y="86" width="42" height="16" rx="2" fill="url(#panelGrad)" stroke="#2e4a72"/>
+            <g stroke="#1d3557" stroke-width="0.6">
+              <line x1="34" y1="94" x2="76" y2="94"/>
+              <line x1="48" y1="86" x2="48" y2="102"/>
+              <line x1="62" y1="86" x2="62" y2="102"/>
+            </g>
+            <rect x="124" y="86" width="42" height="16" rx="2" fill="url(#panelGrad)" stroke="#2e4a72"/>
+            <g stroke="#1d3557" stroke-width="0.6">
+              <line x1="124" y1="94" x2="166" y2="94"/>
+              <line x1="138" y1="86" x2="138" y2="102"/>
+              <line x1="152" y1="86" x2="152" y2="102"/>
+            </g>
+            <rect class="sheen" x="34" y="86" width="18" height="16" fill="url(#sheenGrad)" opacity="0"/>
+          </g>
+          <path d="M 76 100 L 76 78 Q 76 70 84 70 L 116 70 Q 124 70 124 78 L 124 100 Z"
+                fill="url(#metalGrad)" stroke="#202632" stroke-width="1"/>
+          <rect x="82" y="78" width="36" height="6" rx="2" fill="#3c4454"/>
+          <circle class="led" cx="100" cy="90" r="1.8" fill="#7ef0c0"/>
+          <g class="dish">
+            <rect x="98" y="52" width="4" height="18" fill="#8d96aa"/>
+            <ellipse cx="100" cy="48" rx="15" ry="8" fill="url(#dishGrad)" stroke="#59627a" stroke-width="0.9"/>
+            <circle class="glow-pulse" cx="100" cy="44" r="2.2" fill="#e8cfa6"/>
+          </g>
+          <g fill="none" stroke="#e8cfa6" stroke-width="1.3" stroke-linecap="round">
+            <path class="signal-wave" d="M 112 38 Q 122 28 112 18"/>
+            <path class="signal-wave wv2" d="M 118 34 Q 130 22 118 10"/>
+            <path class="signal-wave wv3" d="M 124 30 Q 138 16 124 2"/>
+          </g>
+        </g>
+      </svg>`;
+
+    const MIRROR_SVG = `
+      <svg class="craft-svg mirror-svg" viewBox="0 0 200 150" aria-hidden="true">
+        <g fill="#fff">
+          <circle class="star" cx="24" cy="30" r="1"/>
+          <circle class="star" cx="70" cy="16" r="1.2" style="animation-delay:1.2s"/>
+          <circle class="star" cx="150" cy="24" r="1" style="animation-delay:.6s"/>
+          <circle class="star" cx="178" cy="52" r="1.3" style="animation-delay:2s"/>
+          <circle class="star" cx="40" cy="66" r=".9" style="animation-delay:1.7s"/>
+        </g>
+        <g>
+          <circle cx="18" cy="18" r="7" fill="#1b3a6b"/>
+          <circle cx="18" cy="18" r="7" fill="none" stroke="#4f86d6" stroke-width=".8" opacity=".8"/>
+          <circle class="glow-pulse" cx="16" cy="16" r="2.6" fill="#5aa0ff" opacity=".7"/>
+        </g>
+        <path d="M 0 116 Q 60 104 110 112 T 200 108 L 200 150 L 0 150 Z" fill="#16141c" stroke="#2a2735" stroke-width="1"/>
+        <ellipse cx="52" cy="128" rx="20" ry="4" fill="#0d0c12"/>
+        <ellipse cx="148" cy="134" rx="26" ry="5" fill="#0d0c12"/>
+        <g class="mirror-group">
+          <g transform="rotate(-14 100 96)">
+            <rect x="74" y="80" width="52" height="32" rx="2" fill="#12151d" stroke="#e8cfa6" stroke-width="1.4"/>
+            <g stroke="#e8cfa6" stroke-width=".7" opacity=".85">
+              <line x1="74" y1="80" x2="100" y2="96"/>
+              <line x1="100" y1="96" x2="126" y2="80"/>
+              <line x1="74" y1="112" x2="100" y2="96"/>
+              <line x1="100" y1="96" x2="126" y2="112"/>
+              <line x1="74" y1="96" x2="126" y2="96"/>
+            </g>
+            <rect class="mirror-shine" x="74" y="80" width="52" height="32" rx="2" fill="url(#sheenGrad)"/>
+          </g>
+          <line x1="92" y1="112" x2="94" y2="122" stroke="#59627a" stroke-width="2"/>
+          <line x1="108" y1="112" x2="106" y2="122" stroke="#59627a" stroke-width="2"/>
+          <rect x="90" y="121" width="20" height="3" rx="1.5" fill="#3a4252"/>
+        </g>
+        <line class="laser" x1="26" y1="26" x2="92" y2="92" stroke="#ff7a7a" stroke-width="1.6"/>
+        <line class="laser" x1="108" y1="90" x2="180" y2="22" stroke="#ff7a7a" stroke-width="1.6"/>
+        <circle class="glow-pulse" cx="100" cy="91" r="3.4" fill="#ffb3b3"/>
+      </svg>`;
+
+    const CRAFT_TEMPLATES = { rover: ROVER_SVG, lander: LANDER_SVG, mirror: MIRROR_SVG };
+
+    const timelineData = [
+      { name: "Opportunity Rover", dates: "2004 to 2018", design: 3, actual: 174, label: "90 days", actualLabel: "14+ years", icon: "rover", status: "silent", funFact: "Named by a 9-year-old girl in a NASA contest." },
+      { name: "Spirit Rover", dates: "2004 to 2010", design: 3, actual: 74, label: "90 days", actualLabel: "6 years", icon: "rover", status: "silent", funFact: "Got its wheels stuck in a sand trap, but kept studying the dirt." },
+      { name: "Sojourner Rover", dates: "1997", design: 1, actual: 3, label: "7 days", actualLabel: "83 days", icon: "rover", status: "silent", funFact: "The first wheeled vehicle on another planet." },
+      { name: "Viking 1 Lander", dates: "1976 to 1982", design: 3, actual: 75, label: "90 days", actualLabel: "6 years", icon: "lander", status: "silent", funFact: "It took the first photo from the surface of Mars." },
+      { name: "InSight Lander", dates: "2018 to 2022", design: 24, actual: 49, label: "2 years", actualLabel: "4 years", icon: "lander", status: "silent", funFact: "Detected a marsquake so strong it vibrated for 94 minutes." },
+      { name: "Apollo 11 Retroreflector", dates: "1969 to Present", design: 1, actual: 660, label: "1 month", actualLabel: "55+ years", icon: "mirror", status: "alive", funFact: "No batteries needed. It's just a mirror waiting for lasers." }
+    ];
+
+    const carousel = document.getElementById('timeline-carousel');
+    const numItems = timelineData.length;
+    const angle = 360 / numItems;
+    const radius = 400;
+
+    timelineData.forEach((item, index) => {
+      const el = document.createElement('div');
+      el.className = 'timeline-item';
+      el.style.transform = `rotateY(${index * angle}deg) translateZ(${radius}px)`;
+      el.dataset.index = index;
+      el.innerHTML = `
+        <div class="timeline-info">
+          <div class="timeline-item-head">
+            <span class="status-dot ${item.status}"></span>
+            <h3>${item.name}</h3>
+          </div>
+          <span class="timeline-dates">${item.dates}</span>
+          <div class="bar-labels">
+            <span><span>Designed</span> <strong>${item.label}</strong></span>
+            <span><span>Actual</span> <strong>${item.actualLabel}</strong></span>
+          </div>
+          <div class="fun-fact">${item.funFact}</div>
+        </div>
+        <div class="craft-visual" aria-hidden="true">
+          ${CRAFT_TEMPLATES[item.icon] || CRAFT_TEMPLATES.rover}
+        </div>
+      `;
+      carousel.appendChild(el);
+    });
+
+    // ===== ROBUST TIMELINE SPIN (drag anywhere, momentum, snap) =====
+    const timelineScene = document.querySelector('.timeline-scene');
+    let isDragging = false;
+    let startX = 0;
+    let dragStartRotation = 0;
+    let currentVisualRotation = 0;
+    let velocity = 0;
+    let lastMoveX = 0;
+    let lastMoveT = 0;
+
+    function onTimelineDown(e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      isDragging = true;
+      startX = e.clientX;
+      dragStartRotation = currentVisualRotation;
+      lastMoveX = e.clientX;
+      lastMoveT = performance.now();
+      velocity = 0;
+      carousel.style.transition = 'none';
+      cursorRing.classList.add('dragging');
+      timelineScene.style.cursor = 'grabbing';
+
+      window.addEventListener('pointermove', onTimelineMove, { passive: true });
+      window.addEventListener('pointerup', onTimelineUp);
+      window.addEventListener('pointercancel', onTimelineUp);
+    }
+
+    function onTimelineMove(e) {
+      if (!isDragging) return;
+      const now = performance.now();
+      const dx = e.clientX - startX;
+      const dt = Math.max(1, now - lastMoveT);
+      const instV = (e.clientX - lastMoveX) / dt;
+      velocity = velocity * 0.7 + instV * 0.3;
+      lastMoveX = e.clientX;
+      lastMoveT = now;
+
+      currentVisualRotation = dragStartRotation + dx * 0.5;
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentVisualRotation}deg)`;
+    }
+
+    function onTimelineUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      timelineScene.style.cursor = '';
+      cursorRing.classList.remove('dragging');
+      window.removeEventListener('pointermove', onTimelineMove);
+      window.removeEventListener('pointerup', onTimelineUp);
+      window.removeEventListener('pointercancel', onTimelineUp);
+
+      currentVisualRotation += velocity * 80;
+      const snappedRotation = Math.round(currentVisualRotation / angle) * angle;
+      currentVisualRotation = snappedRotation;
+
+      carousel.style.transition = 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)';
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentVisualRotation}deg)`;
+      updateActiveCard();
+    }
+
+    function updateActiveCard() {
+      const items = document.querySelectorAll('.timeline-item');
+      if (!items.length) return;
+      const steps = Math.round(currentVisualRotation / angle);
+      const activeIndex = ((steps % numItems) + numItems) % numItems;
+      items.forEach((item, i) => {
+        item.classList.toggle('active', i === activeIndex);
+      });
+    }
+
+    timelineScene.addEventListener('pointerdown', onTimelineDown);
+
+    carousel.style.transform = `translateZ(-${radius}px) rotateY(0deg)`;
+    updateActiveCard();
+
+    // ============================================================
+    // 6. WEB AUDIO + TTS HELPERS
+    // ============================================================
+    let sharedAudioCtx = null;
+    function getAudioCtx() {
+      if (!sharedAudioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        sharedAudioCtx = new AC();
+      }
+      if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+      return sharedAudioCtx;
+    }
+
+    let cachedVoices = [];
+    let voicesReadyPromise = null;
+
+    function loadVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length) cachedVoices = v;
+    }
+
+    function whenVoicesReady() {
+      if (!('speechSynthesis' in window)) return Promise.resolve([]);
+      if (cachedVoices.length) return Promise.resolve(cachedVoices);
+      if (voicesReadyPromise) return voicesReadyPromise;
+
+      voicesReadyPromise = new Promise((resolve) => {
+        let tries = 0;
+        const finish = () => { loadVoices(); resolve(cachedVoices); };
+        window.speechSynthesis.onvoiceschanged = finish;
+        const poll = setInterval(() => {
+          loadVoices();
+          if (cachedVoices.length || ++tries > 20) { clearInterval(poll); finish(); }
+        }, 100);
+      });
+      return voicesReadyPromise;
+    }
+
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function primeSpeechEngine() {
+      if (!('speechSynthesis' in window)) return;
+      try {
+        const primer = new SpeechSynthesisUtterance(' ');
+        primer.volume = 0;
+        primer.rate = 1;
+        window.speechSynthesis.speak(primer);
+      } catch (e) { /* ignore */ }
+    }
+
+    // ============================================================
+    // 7. TRANSMISSION SEQUENCES
+    // ============================================================
+    const transmissions = {
+      insight: {
+        freq: 8.42,
+        sig: -98,
+        segments: [
+          { type: 'narration', text: "In 2018, the InSight lander arrived on Mars with one mission: to listen. For four years, it detected the seismic heartbeat of the red planet, revealing what lay deep beneath its surface.", pauseAfter: 500 },
+          { type: 'narration', text: "But then the dust came. Slow at first, then relentless. It buried the solar panels that kept InSight alive. Without sunlight, the batteries drained.", pauseAfter: 500 },
+          { type: 'narration', text: "Data could no longer be collected. Images could no longer be transmitted. But InSight had one message left to send.", pauseAfter: 800 },
+          { type: 'quote', text: "My power's really low, so this may be the last image I can send. But don't worry about me. I've had a good run.", pauseAfter: 1200 },
+          { type: 'outro', text: "InSight's final transmission was received on December 15, 2022. NASA declared the mission complete two months later. The lander remains on Mars, still and silent.", pauseAfter: 0 }
+        ]
+      },
+      opportunity: {
+        freq: 7.18,
+        sig: -104,
+        segments: [
+          { type: 'narration', text: "Opportunity was supposed to last ninety days. Instead, it explored Mars for almost fifteen years, driving over forty-five kilometers, discovering evidence of ancient water.", pauseAfter: 500 },
+          { type: 'narration', text: "Then, in June 2018, a dust storm surrounded the entire planet. The sky darkened. The Sun disappeared. Opportunity's solar panels could no longer charge.", pauseAfter: 500 },
+          { type: 'narration', text: "No more data could be collected. No more images could be sent. But one final message reached Earth.", pauseAfter: 800 },
+          { type: 'quote', text: "My battery is low and it's getting dark.", pauseAfter: 1200 },
+          { type: 'outro', text: "That message was received on June 10, 2018. Eight months later, on February 13, 2019, NASA declared Opportunity's mission complete. It is still there, parked where the storm caught it.", pauseAfter: 0 }
+        ]
+      }
+    };
+
+    // ============================================================
+    // 8. TRANSMISSION PLAYER
+    // ============================================================
+    const allPlayers = [];
+
+    class TransmissionPlayer {
+      constructor(cardEl) {
+        this.el = cardEl;
+        this.config = transmissions[cardEl.dataset.id];
+        if (!this.config) return;
+
+        this.canvas = cardEl.querySelector('.wave-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.playBtn = cardEl.querySelector('.audio-btn');
+        this.btnIcon = cardEl.querySelector('.btn-icon');
+        this.btnLabel = cardEl.querySelector('.btn-label');
+        this.progressFill = cardEl.querySelector('.tx-progress-fill');
+        this.statusEl = cardEl.querySelector('.tx-status');
+        this.segmentLabelEl = cardEl.querySelector('.tx-segment-label');
+        this.messageEl = cardEl.querySelector('.tx-message');
+        this.freqEl = cardEl.querySelector('.tx-freq');
+        this.sigEl = cardEl.querySelector('.tx-sig');
+
+        this.playing = false;
+        this.animFrame = null;
+        this.timeouts = [];
+        this.activeTTS = null;
+        this.audioNodes = null;
+
+        if (this.freqEl) this.freqEl.textContent = this.config.freq;
+        if (this.sigEl) this.sigEl.textContent = this.config.sig;
+
+        this.setupCanvas();
+        window.addEventListener('resize', () => this.setupCanvas());
+
+        this.playBtn.addEventListener('click', () => {
+          primeSpeechEngine();
+          if (this.playing) this.stop();
+          else this.play();
+        });
+
+        this.startWaveLoop();
+        allPlayers.push(this);
+      }
+
+      setupCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.canvas.getBoundingClientRect();
+        this.cw = rect.width || this.canvas.clientWidth || 300;
+        this.ch = rect.height || this.canvas.clientHeight || 150;
+        this.canvas.width = Math.max(1, this.cw) * dpr;
+        this.canvas.height = Math.max(1, this.ch) * dpr;
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      startWaveLoop() {
+        const loop = () => {
+          this.drawWave();
+          this.animFrame = requestAnimationFrame(loop);
+        };
+        loop();
+      }
+
+      drawWave() {
+        if (!this.ctx || !this.cw) return;
+        const { ctx, cw, ch } = this;
+        ctx.clearRect(0, 0, cw, ch);
+        const centerY = ch / 2;
+        const t = Date.now() / 1000;
+
+        ctx.strokeStyle = this.playing ? '#e8cfa6' : 'rgba(232, 207, 166, 0.25)';
+        ctx.lineWidth = this.playing ? 1.5 : 1;
+        ctx.shadowColor = this.playing ? 'rgba(232, 207, 166, 0.6)' : 'transparent';
+        ctx.shadowBlur = this.playing ? 6 : 0;
+
+        ctx.beginPath();
+        const step = 2;
+        for (let x = 0; x <= cw; x += step) {
+          const p = x / cw;
+          let amp;
+          if (this.playing) {
+            const w1 = Math.sin(p * 42 + t * 7) * 16;
+            const w2 = Math.sin(p * 27 - t * 5) * 11;
+            const w3 = Math.sin(p * 9 + t * 3) * 7;
+            const env = Math.sin(p * Math.PI) * 0.8 + 0.2;
+            amp = (w1 + w2 + w3) * env;
+          } else {
+            amp = Math.sin(p * 10 + t * 1.2) * 2.5;
+          }
+          const y = centerY + amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      clearTimeouts() {
+        this.timeouts.forEach(t => clearTimeout(t));
+        this.timeouts = [];
+      }
+
+      setStatus(state, label) {
+        if (!this.statusEl) return;
+        this.statusEl.dataset.state = state;
+        this.statusEl.textContent = label;
+      }
+
+      setSegmentLabel(type) {
+        if (!this.segmentLabelEl) return;
+        if (type === 'idle' || type === 'archived') {
+          this.segmentLabelEl.className = 'tx-segment-label';
+          this.segmentLabelEl.textContent = 'ARCHIVED';
+          return;
+        }
+        this.segmentLabelEl.className = 'tx-segment-label ' + type;
+        const labels = { narration: 'NARRATION', quote: 'DIRECT QUOTE', outro: 'RECORD ENDS' };
+        this.segmentLabelEl.textContent = labels[type] || type.toUpperCase();
+      }
+
+      startAudioStatic() {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const bufferSize = ctx.sampleRate * 2;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.03;
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        src.loop = true;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 800;
+        filter.Q.value = 1.5;
+        const gain = ctx.createGain();
+        gain.gain.value = 0.13;
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        src.start();
+        this.audioNodes = { src, filter, gain };
+      }
+
+      stopAudioStatic() {
+        if (!this.audioNodes) return;
+        try {
+          this.audioNodes.src.stop();
+          this.audioNodes.gain.disconnect();
+        } catch (e) {}
+        this.audioNodes = null;
+      }
+
+      play() {
+        if (this.playing) return;
+        allPlayers.forEach(p => { if (p !== this && p.playing) p.stop(); });
+
+        this.playing = true;
+        this.el.classList.add('playing');
+        this.btnIcon.textContent = '■';
+        this.btnLabel.textContent = 'Stop Transmission';
+
+        this.setStatus('acquiring', 'ACQUIRING');
+        this.startAudioStatic();
+
+        const t1 = setTimeout(() => {
+          this.setStatus('decoding', 'DECODING');
+          const t2 = setTimeout(() => {
+            this.setStatus('receiving', 'RECEIVING');
+            this.runSegment(0);
+          }, 600);
+          this.timeouts.push(t2);
+        }, 500);
+        this.timeouts.push(t1);
+      }
+
+      runSegment(idx) {
+        if (!this.playing) return;
+        const segments = this.config.segments;
+        if (idx >= segments.length) {
+          this.finish();
+          return;
+        }
+        const seg = segments[idx];
+        this.setSegmentLabel(seg.type);
+        this.renderSegmentText(seg, () => {
+          const pause = seg.pauseAfter || 0;
+          const t = setTimeout(() => this.runSegment(idx + 1), pause);
+          this.timeouts.push(t);
+        });
+      }
+
+      renderSegmentText(seg, onDone) {
+        const msgClass = 'tx-' + seg.type;
+        const words = seg.text.split(/(\s+)/);
+
+        let html = `<span class="${msgClass}">`;
+        let wIdx = 0;
+        words.forEach(part => {
+          if (/^\s+$/.test(part) || part === '') {
+            html += part;
+          } else {
+            html += `<span class="tx-word" data-w="${wIdx}">${part}</span>`;
+            wIdx++;
+          }
+        });
+        html += '</span>';
+        this.messageEl.innerHTML = html;
+
+        const wordEls = this.messageEl.querySelectorAll('.tx-word');
+        const totalWords = wordEls.length;
+
+        const highlightWord = (i) => {
+          wordEls.forEach((el, k) => el.classList.toggle('current', k === i));
+        };
+
+        const updateProgress = (i) => {
+          const pct = totalWords > 0 ? ((i + 1) / totalWords) * 100 : 0;
+          if (this.progressFill) this.progressFill.style.width = pct + '%';
+        };
+
+        this.speakSegment(seg.text, (i) => {
+          highlightWord(i);
+          updateProgress(i);
+        }, () => {
+          highlightWord(-1);
+          if (this.progressFill) this.progressFill.style.width = '100%';
+          onDone();
+        });
+      }
+
+      speakSegment(text, onWord, onEnd) {
+        const words = text.split(/\s+/).filter(w => w);
+
+        if (!('speechSynthesis' in window)) {
+          let i = 0;
+          const perWord = 380;
+          const tick = () => {
+            if (i < words.length) {
+              onWord(i);
+              i++;
+              this.timeouts.push(setTimeout(tick, perWord));
+            } else {
+              onWord(-1);
+              this.timeouts.push(setTimeout(onEnd, 400));
+            }
+          };
+          tick();
+          return;
+        }
+
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate = 0.95;
+        utt.pitch = 1.0;
+        utt.volume = 1.0;
+
+        if (cachedVoices.length) {
+          const preferred = cachedVoices.find(v => /Google US English|Samantha|Alex|Daniel|Karen|Moira/i.test(v.name));
+          if (preferred) utt.voice = preferred;
+        }
+
+        let wordIdx = 0;
+        const perWord = Math.max(240, (text.length / Math.max(words.length, 1)) * 45);
+
+        utt.onstart = () => {
+          const tick = () => {
+            if (wordIdx < words.length) {
+              onWord(wordIdx);
+              wordIdx++;
+              this.timeouts.push(setTimeout(tick, perWord));
+            }
+          };
+          tick();
+        };
+
+        utt.onend = () => {
+          onWord(-1);
+          onEnd();
+        };
+
+        utt.onerror = () => {
+          onWord(-1);
+          onEnd();
+        };
+
+        this.activeTTS = utt;
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+        window.speechSynthesis.speak(utt);
+      }
+
+      finish() {
+        this.setStatus('fading', 'FADING');
+        const t = setTimeout(() => {
+          this.setStatus('archived', 'ARCHIVED');
+          this.stopAudioStatic();
+          this.playing = false;
+          this.el.classList.remove('playing');
+          this.btnIcon.textContent = '▶';
+          this.btnLabel.textContent = 'Receive Transmission';
+          if (this.progressFill) this.progressFill.style.width = '0%';
+          this.activeTTS = null;
+        }, 1400);
+        this.timeouts.push(t);
+      }
+
+      stop() {
+        this.playing = false;
+        this.clearTimeouts();
+        this.stopAudioStatic();
+        if (this.activeTTS) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+          this.activeTTS = null;
+        }
+        this.el.classList.remove('playing');
+        this.btnIcon.textContent = '▶';
+        this.btnLabel.textContent = 'Receive Transmission';
+        if (this.progressFill) this.progressFill.style.width = '0%';
+        this.setStatus('idle', 'STANDBY');
+        this.setSegmentLabel('archived');
+        this.messageEl.innerHTML = '<span class="tx-placeholder">Signal archived · Awaiting playback</span>';
+      }
+    }
+
+    // ============================================================
+    // 9. INITIALIZE TRANSMISSION PLAYERS
+    // ============================================================
+    document.querySelectorAll('.transmission-card').forEach(card => {
+      new TransmissionPlayer(card);
+    });
+
+  </script>
+</body>
+</html>
